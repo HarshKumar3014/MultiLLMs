@@ -192,7 +192,7 @@ def generate_completions(model, tokenizer, context: str, n: int = 3) -> list[str
 # Main Evaluation Loop
 # ──────────────────────────────────────────────────────────────────────────────
 
-def run_model_audit(model_key: str, prompts: list[dict], resume: bool = False) -> pd.DataFrame:
+def run_model_audit(model_key: str, prompts: list[dict], resume: bool = False, no_completions: bool = False) -> pd.DataFrame:
     """Run full audit for a single model. Returns DataFrame of results."""
     checkpoint_path = RESULTS_DIR / f"{model_key}_checkpoint.csv"
 
@@ -220,11 +220,13 @@ def run_model_audit(model_key: str, prompts: list[dict], resume: bool = False) -
             # Compute bias scores (log-prob based)
             scores = compute_bias_scores(model, tokenizer, prompt)
 
-            # Generate free-text completions
-            completions = generate_completions(
-                model, tokenizer, prompt["context"],
-                n=INFERENCE["num_completions"]
-            )
+            # Generate free-text completions (if not skipped)
+            completions = []
+            if not no_completions:
+                completions = generate_completions(
+                    model, tokenizer, prompt["context"],
+                    n=INFERENCE["num_completions"]
+                )
 
             # Build result row
             row = {
@@ -244,8 +246,9 @@ def run_model_audit(model_key: str, prompts: list[dict], resume: bool = False) -
             }
 
             # Add completions as separate columns
-            for i, comp in enumerate(completions):
-                row[f"completion_{i+1}"] = comp
+            if not no_completions:
+                for i, comp in enumerate(completions):
+                    row[f"completion_{i+1}"] = comp
 
             results.append(row)
 
@@ -340,7 +343,7 @@ def main():
         print(f"{'━'*60}")
 
         start = time.time()
-        run_model_audit(model_key, prompts, resume=args.resume)
+        run_model_audit(model_key, prompts, resume=args.resume, no_completions=args.no_completions)
         elapsed = time.time() - start
 
         print(f"  ⏱ {model_key} completed in {elapsed/60:.1f} minutes")
