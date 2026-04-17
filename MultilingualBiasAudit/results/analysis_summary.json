@@ -1,0 +1,84 @@
+{
+  "n_models": 10,
+  "n_languages": 8,
+  "n_prompts": 31170,
+  "clfi_rankings": [
+    {
+      "model": "solar-10.7b",
+      "model_group_label": "Regional-Centric",
+      "clfi": 0.9919330609932704,
+      "mean_dfg": 0.0040334695033648294
+    },
+    {
+      "model": "llama3.1-8b",
+      "model_group_label": "English-Centric",
+      "clfi": 0.9900029844450124,
+      "mean_dfg": 0.0049985077774938
+    },
+    {
+      "model": "aya-23-8b",
+      "model_group_label": "Multilingual-Native",
+      "clfi": 0.9889429261095494,
+      "mean_dfg": 0.0055285369452253074
+    },
+    {
+      "model": "yi-1.5-9b",
+      "model_group_label": "Regional-Centric",
+      "clfi": 0.9865517420336769,
+      "mean_dfg": 0.006724128983161525
+    },
+    {
+      "model": "qwen2.5-7b",
+      "model_group_label": "Regional-Centric",
+      "clfi": 0.9852681026663259,
+      "mean_dfg": 0.007365948666837033
+    },
+    {
+      "model": "mistral-7b",
+      "model_group_label": "English-Centric",
+      "clfi": 0.9852329943947525,
+      "mean_dfg": 0.0073835028026237315
+    },
+    {
+      "model": "gemma2-9b",
+      "model_group_label": "English-Centric",
+      "clfi": 0.9849474290655081,
+      "mean_dfg": 0.00752628546724593
+    },
+    {
+      "model": "aya-expanse-8b",
+      "model_group_label": "Multilingual-Native",
+      "clfi": 0.9831423928614021,
+      "mean_dfg": 0.008428803569298926
+    },
+    {
+      "model": "olmo2-7b",
+      "model_group_label": "English-Centric",
+      "clfi": 0.9788579525626828,
+      "mean_dfg": 0.010571023718658614
+    },
+    {
+      "model": "bloomz-7b",
+      "model_group_label": "Multilingual-Native",
+      "clfi": 0.9733753919243546,
+      "mean_dfg": 0.01331230403782267
+    }
+  ],
+  "group_averages": {
+    "English-Centric": {
+      "mean": 0.9847603401169889,
+      "ci_low": 0.9804499282373924,
+      "ci_high": 0.9887390956001363
+    },
+    "Multilingual-Native": {
+      "mean": 0.981820236965102,
+      "ci_low": 0.9733753919243546,
+      "ci_high": 0.9889429261095494
+    },
+    "Regional-Centric": {
+      "mean": 0.9879176352310911,
+      "ci_low": 0.985268102666326,
+      "ci_high": 0.9919330609932704
+    }
+  }
+}

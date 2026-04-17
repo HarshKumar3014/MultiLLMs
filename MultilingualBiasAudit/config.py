@@ -52,7 +52,7 @@ MODEL_REGISTRY = {
         "params": "7B",
     },
     "olmo2-7b": {
-        "hf_id": "allenai/OLMo-2-0425-7B-Instruct",
+        "hf_id": "allenai/OLMo-2-1124-7B-Instruct",
         "group": "A_english_centric",
         "group_label": "English-Centric",
         "org": "AI2",
