@@ -85,7 +85,7 @@ python3 01_build_prompts.py
 # 2. Run Audit (Requires HuggingFace Authentication matching Config)
 python3 02_run_audit.py
 
-# 3. Analyze Results
+# 3. Analyze Results and plot visualizations
 python3 03_analyze.py
 
 # 4. Generate Visualizations
