@@ -90,5 +90,4 @@ python3 03_analyze.py
 
 # 4. Generate Visualizations
 python3 appendix_plots.py
-python3 generate_new_plots.py
 ```
