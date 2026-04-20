@@ -14,14 +14,12 @@ MultilingualBiasAudit/
 ├── config.py                 # Core configuration: models, languages, HF Auth tokens
 ├── 01_build_prompts.py       # Stage 1: Builds and structures the dual-layer probe dataset
 ├── 02_run_audit.py           # Stage 2: Executes model inference over the generated prompts
-├── 03_analyze.py             # Stage 3: Statistical analysis, regressions, and LaTeX generation
-├── appendix_plots.py         # Visualizations: Generates base heatmaps, radars, distributions
-├── generate_new_plots.py     # Visualizations: Generates categorical CLFI and robustness plots
+├── 03_analyze.py             # Stage 3: Statistical analysis, regressions, and generates base heatmaps, radars, distributions
+├── appendix_plots.py         # Visualizations: Generates categorical CLFI and robustness plots
 │
 ├── data/                     # Output directory for generated prompt sets (.jsonl)
 ├── results/                  # Output directory for inference log-probs and results (.csv)
-├── paper/                    # Assorted graphical and draft outputs
-└── icml2026/                 # Final manuscript and LaTeX outputs (Excluded from this doc)
+└── paper/                    # Assorted graphical and draft outputs
 ```
 
 ---
