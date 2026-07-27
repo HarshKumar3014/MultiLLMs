@@ -1,0 +1,203 @@
+{
+  "n_obs": 31170,
+  "n_clusters": 408,
+  "terms": {
+    "Intercept": {
+      "coef": 0.538933,
+      "p_flat_ols": 0.0,
+      "p_clustered": 0.0,
+      "significant_flat": true,
+      "significant_clustered": true
+    },
+    "C(model_group_label)[T.Multilingual-Native]": {
+      "coef": 0.005727,
+      "p_flat_ols": 0.027139,
+      "p_clustered": 0.039428,
+      "significant_flat": true,
+      "significant_clustered": true
+    },
+    "C(model_group_label)[T.Regional-Centric]": {
+      "coef": -0.000398,
+      "p_flat_ols": 0.878095,
+      "p_clustered": 0.818629,
+      "significant_flat": false,
+      "significant_clustered": false
+    },
+    "C(layer)[T.B]": {
+      "coef": -0.00353,
+      "p_flat_ols": 0.887449,
+      "p_clustered": 0.921652,
+      "significant_flat": false,
+      "significant_clustered": false
+    },
+    "C(category)[T.age_hierarchy]": {
+      "coef": -0.221927,
+      "p_flat_ols": 0.000685,
+      "p_clustered": 1.1e-05,
+      "significant_flat": true,
+      "significant_clustered": true
+    },
+    "C(category)[T.bbq_Age]": {
+      "coef": 0.000367,
+      "p_flat_ols": 0.971124,
+      "p_clustered": 0.99396,
+      "significant_flat": false,
+      "significant_clustered": false
+    },
+    "C(category)[T.bbq_Gender_identity]": {
+      "coef": -0.048431,
+      "p_flat_ols": 2e-06,
+      "p_clustered": 0.282475,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.bbq_Nationality]": {
+      "coef": -0.051651,
+      "p_flat_ols": 0.0,
+      "p_clustered": 0.276109,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.bbq_Race_ethnicity]": {
+      "coef": -0.060871,
+      "p_flat_ols": 0.0,
+      "p_clustered": 0.206012,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.bbq_Religion]": {
+      "coef": -0.036371,
+      "p_flat_ols": 0.000336,
+      "p_clustered": 0.432808,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.caste_profession]": {
+      "coef": -0.096682,
+      "p_flat_ols": 0.13893,
+      "p_clustered": 0.053787,
+      "significant_flat": false,
+      "significant_clustered": false
+    },
+    "C(category)[T.education_status]": {
+      "coef": 0.069069,
+      "p_flat_ols": 0.16515,
+      "p_clustered": 0.46455,
+      "significant_flat": false,
+      "significant_clustered": false
+    },
+    "C(category)[T.gender_profession]": {
+      "coef": -0.030694,
+      "p_flat_ols": 0.004448,
+      "p_clustered": 0.469985,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.gender_role]": {
+      "coef": -0.091818,
+      "p_flat_ols": 0.034056,
+      "p_clustered": 0.188409,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.gender_trait]": {
+      "coef": 0.04114,
+      "p_flat_ols": 0.002027,
+      "p_clustered": 0.493105,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.indigenous_stereotype]": {
+      "coef": -0.066755,
+      "p_flat_ols": 0.307043,
+      "p_clustered": 0.185156,
+      "significant_flat": false,
+      "significant_clustered": false
+    },
+    "C(category)[T.nationality_trait]": {
+      "coef": -0.231042,
+      "p_flat_ols": 3e-06,
+      "p_clustered": 0.000157,
+      "significant_flat": true,
+      "significant_clustered": true
+    },
+    "C(category)[T.origin_stereotype]": {
+      "coef": -0.017181,
+      "p_flat_ols": 0.792636,
+      "p_clustered": 0.733085,
+      "significant_flat": false,
+      "significant_clustered": false
+    },
+    "C(category)[T.race_trait]": {
+      "coef": -0.035497,
+      "p_flat_ols": 0.003991,
+      "p_clustered": 0.518804,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.regional_stereotype]": {
+      "coef": -0.207004,
+      "p_flat_ols": 3.2e-05,
+      "p_clustered": 0.145302,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.religion]": {
+      "coef": -0.056248,
+      "p_flat_ols": 2.4e-05,
+      "p_clustered": 0.260443,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.religion_stereotype]": {
+      "coef": 0.254732,
+      "p_flat_ols": 9.7e-05,
+      "p_clustered": 0.0,
+      "significant_flat": true,
+      "significant_clustered": true
+    },
+    "C(category)[T.stereoset_gender]": {
+      "coef": -0.064684,
+      "p_flat_ols": 0.0,
+      "p_clustered": 0.132696,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.stereoset_profession]": {
+      "coef": -0.055565,
+      "p_flat_ols": 0.0,
+      "p_clustered": 0.194669,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.stereoset_race]": {
+      "coef": -0.061943,
+      "p_flat_ols": 0.0,
+      "p_clustered": 0.151502,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.stereoset_religion]": {
+      "coef": -0.062417,
+      "p_flat_ols": 0.0,
+      "p_clustered": 0.146834,
+      "significant_flat": true,
+      "significant_clustered": false
+    },
+    "C(category)[T.tribal_stereotype]": {
+      "coef": -0.206871,
+      "p_flat_ols": 0.001549,
+      "p_clustered": 3.7e-05,
+      "significant_flat": true,
+      "significant_clustered": true
+    },
+    "resource_numeric": {
+      "coef": 0.00314,
+      "p_flat_ols": 0.038854,
+      "p_clustered": 0.380591,
+      "significant_flat": true,
+      "significant_clustered": false
+    }
+  },
+  "n_terms_flipped_to_nonsignificant": 15
+}

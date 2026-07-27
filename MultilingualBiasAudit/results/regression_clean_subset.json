@@ -1,0 +1,15 @@
+{
+  "full": {
+    "n": 31170,
+    "coef": 0.00314,
+    "pvalue": 0.038854,
+    "significant": true
+  },
+  "clean_subset": {
+    "n": 21630,
+    "coef": 0.000129,
+    "pvalue": 0.950916,
+    "significant": false
+  },
+  "survived": false
+}

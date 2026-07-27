@@ -1,0 +1,5 @@
+{
+  "flat_ols_full_data_significant": true,
+  "mixed_effects_plus_clean_subset_significant": false,
+  "conclusion": "Resource-level effect does NOT survive when both non-independence and translation-quality confound are corrected simultaneously \u2014 original finding was a compound artifact."
+}
