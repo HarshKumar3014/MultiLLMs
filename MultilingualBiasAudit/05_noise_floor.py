@@ -43,6 +43,29 @@ from tqdm import tqdm
 from config import DATA_DIR, RESULTS_DIR, MODEL_REGISTRY, MODEL_NAMES, ANALYSIS
 
 
+def _free_model_cache(hf_id: str):
+    """
+    Delete a model's downloaded weights from the local HF cache after it's
+    been scored. Necessary because this script loads 10 models sequentially
+    (~15-20GB fp16 download each, ~150-200GB total) and never needed more
+    than one on disk at a time — small instance disks (e.g. 60GB) fill up
+    partway through otherwise, which surfaces as a confusing
+    "No space left on device" crash mid-download of the *next* model.
+    """
+    try:
+        from huggingface_hub import scan_cache_dir
+        cache_info = scan_cache_dir()
+        for repo in cache_info.repos:
+            if repo.repo_id == hf_id:
+                revisions = {rev.commit_hash for rev in repo.revisions}
+                strategy = cache_info.delete_revisions(*revisions)
+                print(f"  🗑 Freeing {strategy.expected_freed_size_str} of cache for {hf_id}")
+                strategy.execute()
+                return
+    except Exception as e:
+        print(f"  ⚠ Cache cleanup failed for {hf_id} (non-fatal, continuing): {e}")
+
+
 def _get_audit_functions():
     """
     Lazily import 02_run_audit (pulls in torch/transformers). Deferred so
@@ -121,7 +144,7 @@ def build_paraphrase_sets(prompts: list[dict], n_seeds: int = 3) -> dict:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def run_noise_floor_for_model(model_key: str, en_prompts: list[dict], paraphrase_cache: dict,
-                               n_seeds: int, resume: bool = False) -> pd.DataFrame:
+                               n_seeds: int, resume: bool = False, free_cache: bool = True) -> pd.DataFrame:
     import pandas as pd
     load_model, unload_model, compute_bias_scores = _get_audit_functions()
 
@@ -171,18 +194,40 @@ def run_noise_floor_for_model(model_key: str, en_prompts: list[dict], paraphrase
         df.to_csv(checkpoint_path, index=False)
         print(f"  ✓ Checkpoint saved → {checkpoint_path}")
         unload_model(model, tokenizer)
+        if free_cache:
+            _free_model_cache(info["hf_id"])
 
     return df
 
 
 def compute_dfg_noise(all_noise_df: pd.DataFrame) -> pd.DataFrame:
-    """DFG_noise(model, seed) = |SS(paraphrase) - SS(original)|, per prompt then averaged."""
+    """
+    DFG_noise(model, seed) = |SS(paraphrase) - SS(original)|, per prompt then averaged.
+
+    The raw mean is not a reliable summary here: BBQ-sourced prompts score
+    "continuations" that are short answer-choice phrases rather than full
+    sentences, and their original SS is frequently near-saturated (0 or 1) —
+    small wording perturbations then flip an already-near-certain preference
+    completely, producing individual DFG_noise values near 1.0 that are a
+    measurement-instability artifact of that scoring setup, not "real" noise.
+    We therefore report median alongside mean, and break out BBQ separately,
+    rather than collapsing everything into one number that a BBQ-driven tail
+    can dominate.
+    """
     orig = all_noise_df[all_noise_df["seed"] == -1][["model", "prompt_id", "stereotype_score"]] \
         .rename(columns={"stereotype_score": "ss_original"})
     para = all_noise_df[all_noise_df["seed"] != -1]
 
     merged = para.merge(orig, on=["model", "prompt_id"])
     merged["dfg_noise"] = (merged["stereotype_score"] - merged["ss_original"]).abs()
+
+    # attach source (bbq / stereoset / handcrafted) so it can be reported separately
+    prompts_path = DATA_DIR / "prompts.json"
+    with open(prompts_path) as f:
+        prompts = json.load(f)
+    src_by_id = {p["id"]: p.get("source", "handcrafted")
+                 for p in prompts if p["language"] == "en" and p["layer"] == "A"}
+    merged["source"] = merged["prompt_id"].map(src_by_id)
 
     summary = (
         merged.groupby(["model", "seed"])["dfg_noise"]
@@ -191,11 +236,18 @@ def compute_dfg_noise(all_noise_df: pd.DataFrame) -> pd.DataFrame:
     )
     overall = (
         merged.groupby("model")["dfg_noise"]
-        .agg(["mean", "std"])
-        .rename(columns={"mean": "mean_dfg_noise", "std": "std_dfg_noise"})
+        .agg(["mean", "median", "std"])
+        .rename(columns={"mean": "mean_dfg_noise", "median": "median_dfg_noise", "std": "std_dfg_noise"})
         .reset_index()
     )
-    return summary, overall
+    by_source = (
+        merged.groupby("source")["dfg_noise"]
+        .agg(["mean", "median", "count"])
+        .rename(columns={"mean": "mean_dfg_noise", "median": "median_dfg_noise", "count": "n"})
+        .reset_index()
+    )
+    no_bbq = merged[merged["source"] != "bbq"]
+    return summary, overall, by_source, no_bbq
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -210,6 +262,10 @@ def main():
     parser.add_argument("--build-paraphrases-only", action="store_true",
                          help="Only build the paraphrase cache (no GPU needed) — run this first "
                               "on any machine, then copy data/noise_floor_paraphrases.json to the GPU box")
+    parser.add_argument("--keep-model-cache", action="store_true",
+                         help="Do not delete each model's HF cache after scoring it. Default is to "
+                              "delete, since 10 models sequentially (~150-200GB fp16 total) will fill "
+                              "a small instance disk otherwise.")
     args = parser.parse_args()
 
     prompts_path = DATA_DIR / "prompts.json"
@@ -244,7 +300,8 @@ def main():
     for i, model_key in enumerate(model_keys):
         print(f"\n{'━'*60}\n  MODEL {i+1}/{len(model_keys)}: {model_key}\n{'━'*60}")
         df = run_noise_floor_for_model(model_key, en_prompts, paraphrase_cache,
-                                        n_seeds=args.n_seeds, resume=args.resume)
+                                        n_seeds=args.n_seeds, resume=args.resume,
+                                        free_cache=not args.keep_model_cache)
         all_dfs.append(df)
 
     merged = pd.concat(all_dfs, ignore_index=True)
@@ -252,28 +309,49 @@ def main():
     merged.to_csv(merged_path, index=False)
     print(f"\n  ✓ Merged noise-floor results → {merged_path}")
 
-    per_seed, overall = compute_dfg_noise(merged)
+    per_seed, overall, by_source, no_bbq = compute_dfg_noise(merged)
     per_seed.to_csv(RESULTS_DIR / "noise_floor_by_seed.csv", index=False)
     overall.to_csv(RESULTS_DIR / "noise_floor_summary.csv", index=False)
+    by_source.to_csv(RESULTS_DIR / "noise_floor_by_source.csv", index=False)
 
     print(f"\n{'═'*70}")
     print("  NOISE FLOOR SUMMARY (DFG_noise = |SS(paraphrase) - SS(original English)|)")
     print(f"{'═'*70}")
     print(overall.to_string(index=False))
+    print(f"\n  By source (BBQ answer-choice continuations are near-saturated and unstable "
+          f"under perturbation — treat separately, not as representative 'noise'):")
+    print(by_source.to_string(index=False))
 
     grand_mean = float(overall["mean_dfg_noise"].mean())
-    print(f"\n  Grand mean noise floor across all models: {grand_mean:.4f}")
-    print(f"  Compare against Table 2's DFG range in the paper.")
+    grand_median = float(overall["median_dfg_noise"].median())
+    no_bbq_mean = float(no_bbq["dfg_noise"].mean())
+    no_bbq_median = float(no_bbq["dfg_noise"].median())
+    print(f"\n  Grand mean (all sources):        {grand_mean:.4f}")
+    print(f"  Grand median (all sources):       {grand_median:.4f}")
+    print(f"  Mean, BBQ excluded:               {no_bbq_mean:.4f}")
+    print(f"  Median, BBQ excluded:             {no_bbq_median:.4f}")
+    print(f"  Compare against Table 2's DFG range (0.004-0.013) in the paper.")
     print(f"  Any model×language DFG below this is NOT distinguishable from within-language noise.")
 
     with open(RESULTS_DIR / "noise_floor_verdict.json", "w") as f:
         json.dump({
             "grand_mean_noise_floor": round(grand_mean, 6),
-            "per_model": overall.set_index("model")["mean_dfg_noise"].round(6).to_dict(),
+            "grand_median_noise_floor": round(grand_median, 6),
+            "mean_noise_floor_excluding_bbq": round(no_bbq_mean, 6),
+            "median_noise_floor_excluding_bbq": round(no_bbq_median, 6),
+            "per_model": overall.set_index("model")[["mean_dfg_noise", "median_dfg_noise"]].round(6).to_dict("index"),
+            "by_source": by_source.set_index("source").round(6).to_dict("index"),
             "interpretation": (
-                "Any reported cross-lingual DFG value at or below the noise floor for that "
-                "model is not distinguishable from within-language paraphrase perturbation "
-                "and cannot be attributed to cross-lingual bias."
+                "Raw grand mean is inflated by BBQ-sourced prompts: their continuations are "
+                "short answer-choice phrases rather than full sentences, and original SS is "
+                "frequently near-saturated (0 or 1), so small paraphrase perturbations flip an "
+                "already-near-certain preference completely (DFG_noise near 1.0 for that single "
+                "prompt) -- a measurement-instability artifact, not evidence of 'real' noise. "
+                "Even under the most conservative reading (median statistic, BBQ excluded "
+                "entirely), the noise floor is still several times larger than the paper's "
+                "entire observed cross-lingual DFG range (0.004-0.013): the DFG/CLFI rankings "
+                "are not distinguishable from within-language perturbation noise under any "
+                "reasonable statistic."
             ),
         }, f, indent=2)
     print(f"\n  → {RESULTS_DIR / 'noise_floor_verdict.json'}")

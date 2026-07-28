@@ -1,0 +1,66 @@
+{
+  "grand_mean_noise_floor": 0.150879,
+  "grand_median_noise_floor": 0.085221,
+  "mean_noise_floor_excluding_bbq": 0.114191,
+  "median_noise_floor_excluding_bbq": 0.077876,
+  "per_model": {
+    "aya-23-8b": {
+      "mean_dfg_noise": 0.162028,
+      "median_dfg_noise": 0.059911
+    },
+    "aya-expanse-8b": {
+      "mean_dfg_noise": 0.15841,
+      "median_dfg_noise": 0.094541
+    },
+    "bloomz-7b": {
+      "mean_dfg_noise": 0.122715,
+      "median_dfg_noise": 0.073693
+    },
+    "gemma2-9b": {
+      "mean_dfg_noise": 0.161955,
+      "median_dfg_noise": 0.098282
+    },
+    "llama3.1-8b": {
+      "mean_dfg_noise": 0.14395,
+      "median_dfg_noise": 0.079889
+    },
+    "mistral-7b": {
+      "mean_dfg_noise": 0.129629,
+      "median_dfg_noise": 0.072167
+    },
+    "olmo2-7b": {
+      "mean_dfg_noise": 0.169222,
+      "median_dfg_noise": 0.100824
+    },
+    "qwen2.5-7b": {
+      "mean_dfg_noise": 0.171194,
+      "median_dfg_noise": 0.106284
+    },
+    "solar-10.7b": {
+      "mean_dfg_noise": 0.146366,
+      "median_dfg_noise": 0.089162
+    },
+    "yi-1.5-9b": {
+      "mean_dfg_noise": 0.143324,
+      "median_dfg_noise": 0.08128
+    }
+  },
+  "by_source": {
+    "bbq": {
+      "mean_dfg_noise": 0.208846,
+      "median_dfg_noise": 0.112216,
+      "n": 4500
+    },
+    "handcrafted": {
+      "mean_dfg_noise": 0.091626,
+      "median_dfg_noise": 0.04618,
+      "n": 1110
+    },
+    "stereoset": {
+      "mean_dfg_noise": 0.118366,
+      "median_dfg_noise": 0.082883,
+      "n": 6000
+    }
+  },
+  "interpretation": "Raw grand mean is inflated by BBQ-sourced prompts: their continuations are short answer-choice phrases rather than full sentences, and original SS is frequently near-saturated (0 or 1), so small paraphrase perturbations flip an already-near-certain preference completely (DFG_noise near 1.0 for that single prompt) -- a measurement-instability artifact, not evidence of real noise. Even under the most conservative reading (median statistic, BBQ excluded entirely), the noise floor is still several times larger than the papers entire observed cross-lingual DFG range (0.004-0.013): the DFG/CLFI rankings are not distinguishable from within-language perturbation noise under any reasonable statistic."
+}
