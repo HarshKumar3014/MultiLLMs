@@ -1,21 +1,22 @@
 \begin{table}[t]
 \centering
-\caption{Cross-Lingual Fairness Index (CLFI) Rankings. Higher CLFI indicates more equitable bias treatment across languages.}
+\small
+\caption{Cross-Lingual Fairness Index (CLFI) Rankings (nominal; see \S4.1 for the noise-floor test). Higher CLFI indicates more equitable bias treatment across languages. Provenance: A=English-Centric, B=Multilingual-Native, C=Regional-Centric (row tint matches Figure 1).}
 \label{tab:clfi}
-\begin{tabular}{llcc}
+\begin{tabular}{lccc}
 \toprule
-\textbf{Model} & \textbf{Provenance} & \textbf{CLFI} $\uparrow$ & \textbf{Mean DFG} $\downarrow$ \\
+\textbf{Model} & \textbf{Prov.} & \textbf{CLFI} $\uparrow$ & \textbf{DFG} $\downarrow$ \\
 \midrule
-  solar-10.7b & Regional-Centric & 0.992 & 0.0040 \\
-  llama3.1-8b & English-Centric & 0.990 & 0.0050 \\
-  aya-23-8b & Multilingual-Native & 0.989 & 0.0055 \\
-  yi-1.5-9b & Regional-Centric & 0.987 & 0.0067 \\
-  qwen2.5-7b & Regional-Centric & 0.985 & 0.0074 \\
-  mistral-7b & English-Centric & 0.985 & 0.0074 \\
-  gemma2-9b & English-Centric & 0.985 & 0.0075 \\
-  aya-expanse-8b & Multilingual-Native & 0.983 & 0.0084 \\
-  olmo2-7b & English-Centric & 0.979 & 0.0106 \\
-  bloomz-7b & Multilingual-Native & 0.973 & 0.0133 \\
+  \rowcolor[HTML]{F8EAEA} solar-10.7b & C & 0.992 & 0.0040 \\
+  \rowcolor[HTML]{EAEEF6} llama3.1-8b & A & 0.990 & 0.0050 \\
+  \rowcolor[HTML]{EBF5ED} aya-23-8b & B & 0.989 & 0.0055 \\
+  \rowcolor[HTML]{F8EAEA} yi-1.5-9b & C & 0.987 & 0.0067 \\
+  \rowcolor[HTML]{F8EAEA} qwen2.5-7b & C & 0.985 & 0.0074 \\
+  \rowcolor[HTML]{EAEEF6} mistral-7b & A & 0.985 & 0.0074 \\
+  \rowcolor[HTML]{EAEEF6} gemma2-9b & A & 0.985 & 0.0075 \\
+  \rowcolor[HTML]{EBF5ED} aya-expanse-8b & B & 0.983 & 0.0084 \\
+  \rowcolor[HTML]{EAEEF6} olmo2-7b & A & 0.979 & 0.0106 \\
+  \rowcolor[HTML]{EBF5ED} bloomz-7b & B & 0.973 & 0.0133 \\
 \bottomrule
 \end{tabular}
 \end{table}

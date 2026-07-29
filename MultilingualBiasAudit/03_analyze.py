@@ -24,6 +24,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")  # non-interactive backend
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import seaborn as sns
 from scipy import stats
 from tqdm import tqdm
@@ -285,9 +286,18 @@ def plot_heatmap(model_lang: pd.DataFrame):
 
     fig, ax = plt.subplots(figsize=(12, 8))
     sns.heatmap(
-        pivot, annot=True, fmt=".3f", cmap="RdYlGn_r",
-        center=0.5, vmin=0.35, vmax=0.65,
-        linewidths=0.5, linecolor="white",
+        # PuOr instead of RdYlGn: red-green diverging palettes are not
+        # colorblind-safe (fail for deuteranopia/protanopia); PuOr is a
+        # ColorBrewer-validated CVD-safe diverging pair. Cells are also
+        # directly annotated with values (secondary encoding), so identity
+        # never depends on color alone. vmin/vmax zoomed to just beyond the
+        # actual data range (~0.469-0.517) rather than a token +/-0.15
+        # window, so the real cell-to-cell variation actually shows up in
+        # color instead of being washed out to near-uniform pale yellow.
+        pivot, annot=True, fmt=".3f", cmap="PuOr_r",
+        center=0.5, vmin=0.46, vmax=0.54,
+        linewidths=1.2, linecolor="white",
+        annot_kws={"fontsize": 9.5, "fontweight": "medium"},
         cbar_kws={"label": "Stereotype Score (SS)", "shrink": 0.8},
         ax=ax,
     )
@@ -301,12 +311,15 @@ def plot_heatmap(model_lang: pd.DataFrame):
     y = 0
     for g, count in group_counts.items():
         if y > 0:
-            ax.axhline(y=y, color="black", linewidth=2)
+            ax.axhline(y=y, color="white", linewidth=4)
+            ax.axhline(y=y, color="#333333", linewidth=1.2)
         y += count
 
-    ax.set_title("Stereotype Score by Model × Language\n"
-                 "(0.5 = unbiased, >0.5 = pro-stereotype, <0.5 = anti-stereotype)",
-                 fontsize=13, pad=15)
+    ax.set_title("Stereotype Score by Model × Language", fontsize=16, fontweight="bold",
+                 pad=32, loc="left")
+    ax.text(0, 1.045, "0.5 = unbiased · warmer (orange) = pro-stereotype · cooler (purple) = anti-stereotype "
+                       "· color scale zoomed to the data range",
+            transform=ax.transAxes, fontsize=10, color="#6B6B6B", ha="left")
     ax.set_ylabel("")
     ax.set_xlabel("")
     plt.tight_layout()
@@ -318,47 +331,105 @@ def plot_heatmap(model_lang: pd.DataFrame):
     print(f"    → {path}")
 
 
-def plot_clfi_radar(clfi_df: pd.DataFrame):
+def _dfg_per_language(df: pd.DataFrame, model: str) -> np.ndarray:
+    sub = df[df["model"] == model]
+    en_ss = sub[sub["language"] == "en"]["stereotype_score"].mean()
+    lang_ss = sub.groupby("language")["stereotype_score"].mean()
+    lang_ss = lang_ss[lang_ss.index != "en"]
+    return (lang_ss - en_ss).abs().values
+
+
+def _bootstrap_ci(values: np.ndarray, n_boot: int = 2000, seed: int = 42) -> tuple:
+    rng = np.random.default_rng(seed)
+    boot_means = np.array([
+        rng.choice(values, size=len(values), replace=True).mean()
+        for _ in range(n_boot)
+    ])
+    return np.percentile(boot_means, 2.5), np.percentile(boot_means, 97.5)
+
+
+def plot_clfi_radar(clfi_df: pd.DataFrame, df: pd.DataFrame):
     """
-    Figure 2: CLFI Radar Chart — compact comparison of cross-lingual fairness.
+    Figure 3: CLFI forest plot (point + 95% bootstrap CI per model).
+
+    Formerly a polar/radar bar chart. Replaced: a radar's wedge area scales
+    with r^2, so it visually exaggerated the ~2-percentage-point CLFI spread
+    (0.973-0.992) into what looked like a dramatic gap between models,
+    actively misleading given this paper's own finding that the underlying
+    DFG differences are not distinguishable from noise. This is now a
+    standard forest-plot-style figure (point estimate + CI per row), the
+    convention for "is this estimate distinguishable from a reference"
+    comparisons, matching Figure 1's visual language. CLFI = 1 - 2*mean(DFG)
+    is a monotone transform of DFG, so its CI is derived directly from the
+    same per-language bootstrap used for the DFG forest plot.
     """
-    print("  📊 Generating CLFI radar chart...")
+    print("  📊 Generating CLFI forest plot...")
 
-    models = clfi_df["model"].tolist()
-    values = clfi_df["clfi"].tolist()
-    groups = clfi_df["model_group"].tolist()
+    models_all = clfi_df["model"].tolist()
+    per_lang = {m: _dfg_per_language(df, m) for m in models_all}
+    dfg_ci = {m: _bootstrap_ci(v) for m, v in per_lang.items()}
+    # CLFI = 1 - 2*DFG is decreasing in DFG, so CI bounds flip under the transform.
+    clfi_ci = {m: (1 - 2 * hi, 1 - 2 * lo) for m, (lo, hi) in dfg_ci.items()}
 
-    N = len(models)
-    angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
-    values_closed = values + [values[0]]
-    angles_closed = angles + [angles[0]]
+    clfi_val = dict(zip(clfi_df["model"], clfi_df["clfi"]))
+    group_of = dict(zip(clfi_df["model"], clfi_df["model_group"]))
+    models = sorted(models_all, key=lambda m: clfi_val[m])
+    colors = [GROUP_COLORS.get(group_of[m], "#888888") for m in models]
 
-    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
+    PANEL_BG = "#FAFAF8"
+    ZEBRA_COLOR = "#EFEEEA"
+    TEXT_MUTED = "#6B6B6B"
 
-    # Plot each point colored by group
-    for i, (model, val, group) in enumerate(zip(models, values, groups)):
-        color = GROUP_COLORS.get(group, "#888888")
-        ax.bar(angles[i], val, width=0.4, alpha=0.7, color=color,
-               edgecolor=color, linewidth=1.5, label=GROUP_LABELS.get(group, group))
+    fig, ax = plt.subplots(figsize=(8.6, 6.2))
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor(PANEL_BG)
+    y = np.arange(len(models))
+    n = len(models)
 
-    # Clean up labels and legend
-    ax.set_xticks(angles)
-    ax.set_xticklabels(models, fontsize=9)
-    ax.set_ylim(0, 1)
-    ax.set_yticks([0.2, 0.4, 0.6, 0.8, 1.0])
-    ax.set_yticklabels(["0.2", "0.4", "0.6", "0.8", "1.0"], fontsize=8)
-    ax.set_title("Cross-Lingual Fairness Index (CLFI)\n"
-                 "(1.0 = perfect equity across languages)", pad=20)
+    for yi in range(n):
+        if yi % 2 == 0:
+            ax.axhspan(yi - 0.5, yi + 0.5, color=ZEBRA_COLOR, zorder=0, linewidth=0)
 
-    # Deduplicated legend
-    handles, labels = ax.get_legend_handles_labels()
-    by_label = dict(zip(labels, handles))
-    ax.legend(by_label.values(), by_label.keys(), loc="upper right",
-              bbox_to_anchor=(1.3, 1.1), fontsize=10)
+    all_los = [clfi_ci[m][0] for m in models]
+    x_min = min(all_los) - 0.004
 
+    for yi, (m, c) in enumerate(zip(models, colors)):
+        lo, hi = clfi_ci[m]
+        ax.plot([lo, hi], [yi, yi], color=c, linewidth=2.2, alpha=0.9, zorder=3,
+                 solid_capstyle="round")
+        ax.plot([lo, lo], [yi - 0.14, yi + 0.14], color=c, linewidth=2.2, zorder=3)
+        ax.plot([hi, hi], [yi - 0.14, yi + 0.14], color=c, linewidth=2.2, zorder=3)
+        ax.plot(clfi_val[m], yi, "o", color=c, markersize=10.5, markeredgecolor="white",
+                 markeredgewidth=1.4, zorder=4)
+        ax.text(hi + 0.0015, yi, f"{clfi_val[m]:.3f}", va="center", ha="left",
+                 fontsize=9.5, color=TEXT_MUTED, zorder=4)
+
+    ax.set_yticks(y)
+    ax.set_yticklabels(models, fontsize=11)
+    ax.set_ylim(-0.5, n - 0.1)
+    ax.set_xlim(x_min, 1.012)
+    ax.set_xlabel("Cross-Lingual Fairness Index (CLFI), mean $\\pm$ 95% bootstrap CI",
+                  fontsize=11, color=TEXT_MUTED)
+    ax.set_title("CLFI confidence intervals overlap across the entire ranking",
+                 fontsize=15, fontweight="bold", pad=28, loc="left")
+    ax.text(0, 1.03, "Point = observed CLFI · bar = 95% CI, derived from the same per-language bootstrap as panel (a)",
+            transform=ax.transAxes, fontsize=9.5, color=TEXT_MUTED, ha="left")
+
+    ax.grid(axis="x", alpha=0.5, zorder=0, color="white", linewidth=1.2)
+    for spine in ["top", "right", "left"]:
+        ax.spines[spine].set_visible(False)
+    ax.spines["bottom"].set_color("#CCCCCC")
+    ax.tick_params(axis="both", length=0)
+
+    handles = [plt.Line2D([0], [0], marker="o", color="none", markerfacecolor=GROUP_COLORS[g],
+                           markeredgecolor="white", markersize=9, label=GROUP_LABELS[g])
+               for g in GROUP_COLORS]
+    ax.legend(handles=handles, loc="lower right", fontsize=9, framealpha=0.95, edgecolor="#DDDDDD")
+
+    plt.tight_layout()
     path = FIGURES_DIR / "fig2_clfi_radar.pdf"
-    fig.savefig(path)
-    fig.savefig(path.with_suffix(".png"))
+    fig.savefig(path, facecolor="white")
+    fig.savefig(path.with_suffix(".png"), facecolor="white")
     plt.close(fig)
     print(f"    → {path}")
 
@@ -384,45 +455,82 @@ def plot_dfg_by_resource(dfg_df: pd.DataFrame):
         plot_df["resource_level"], categories=RESOURCE_ORDER, ordered=True
     )
 
-    # Aggregate: mean DFG per resource level × model group
+    # Aggregate: mean DFG per resource level x model group. Standard error
+    # of the mean (std / sqrt(n)), not raw std: raw std across the
+    # underlying per-language DFG draws is often as large as the mean
+    # itself here (coefficient of variation ~70-100%), which made a
+    # bar+errorbar rendering dominated by whisker length rather than
+    # legible bar comparison. SEM is the standard, defensible uncertainty
+    # band for "how precisely is this group mean estimated" and is an
+    # order of magnitude tighter, consistent with how uncertainty is
+    # shown everywhere else in this paper (Figures 1, 3).
     agg = (
         plot_df.groupby(["model_group_label", "resource_level"], observed=True)["dfg"]
-        .agg(["mean", "std"])
+        .agg(["mean", "std", "count"])
         .reset_index()
     )
+    agg["sem"] = agg["std"] / np.sqrt(agg["count"])
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    PANEL_BG = "#FAFAF8"
+    TEXT_MUTED = "#6B6B6B"
+
+    fig, ax = plt.subplots(figsize=(7.5, 5))
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor(PANEL_BG)
 
     group_labels = list(GROUP_LABELS.values())
-    x = np.arange(len(RESOURCE_ORDER))
-    width = 0.25
+    # One row per (resource level, group) combination, forest-plot style,
+    # grouped visually by resource level with zebra banding per level.
+    rows = [(r, g) for r in RESOURCE_ORDER for g in group_labels]
+    y = np.arange(len(rows))
 
-    for i, group_label in enumerate(group_labels):
-        group_data = agg[agg["model_group_label"] == group_label]
-        means = [group_data[group_data["resource_level"] == r]["mean"].values
-                 for r in RESOURCE_ORDER]
-        stds = [group_data[group_data["resource_level"] == r]["std"].values
-                for r in RESOURCE_ORDER]
-        means = [m[0] if len(m) > 0 else 0 for m in means]
-        stds = [s[0] if len(s) > 0 else 0 for s in stds]
+    for ri in range(len(RESOURCE_ORDER)):
+        if ri % 2 == 0:
+            ax.axhspan(ri * len(group_labels) - 0.5, ri * len(group_labels) + len(group_labels) - 0.5,
+                       color="#EFEEEA", zorder=0, linewidth=0)
 
+    for yi, (resource, group_label) in enumerate(rows):
+        cell = agg[(agg["resource_level"] == resource) & (agg["model_group_label"] == group_label)]
+        if cell.empty:
+            continue
+        mean, sem = cell["mean"].values[0], cell["sem"].values[0]
         group_key = [k for k, v in GROUP_LABELS.items() if v == group_label][0]
         color = GROUP_COLORS[group_key]
-        ax.bar(x + i * width, means, width, yerr=stds, capsize=4,
-               color=color, alpha=0.85, label=group_label, edgecolor="white")
+        ax.plot([mean - sem, mean + sem], [yi, yi], color=color, linewidth=2, zorder=2,
+                 solid_capstyle="round")
+        ax.plot(mean, yi, "o", color=color, markersize=8, markeredgecolor="white",
+                 markeredgewidth=1.1, zorder=3)
+        ax.text(mean + sem + 0.0006, yi, f"{mean:.3f}", va="center", ha="left",
+                 fontsize=8, color=TEXT_MUTED, zorder=3)
 
-    ax.set_xlabel("Language Resource Level")
-    ax.set_ylabel("Deployment Fairness Gap (DFG)")
-    ax.set_title("Deployment Fairness Gap by Language Resource Level\n"
-                 "(higher = less fair treatment vs. English)")
-    ax.set_xticks(x + width)
-    ax.set_xticklabels([r.capitalize() for r in RESOURCE_ORDER])
-    ax.legend()
-    ax.grid(axis="y", alpha=0.3)
+    ax.set_yticks(y)
+    ax.set_yticklabels([g for _, g in rows], fontsize=8.5)
+    # Resource-level group labels on the right margin
+    for ri, r in enumerate(RESOURCE_ORDER):
+        y0 = ri * len(group_labels) - 0.5
+        y1 = y0 + len(group_labels)
+        ax.annotate(r.capitalize(), xy=(1.02, (y0 + y1) / 2), xycoords=("axes fraction", "data"),
+                    fontsize=10, fontweight="bold", color=TEXT_MUTED, va="center", ha="left",
+                    rotation=270)
 
+    ax.invert_yaxis()
+    ax.set_xlabel("Deployment Fairness Gap (DFG), mean $\\pm$ SEM", color=TEXT_MUTED)
+    ax.set_title("DFG by language resource level (descriptive)", fontsize=14,
+                 fontweight="bold", pad=26, loc="left")
+    ax.text(0, 1.04, "Not noise-floor tested; the apparent low-resource pattern does not "
+                      "survive the translation-quality confound check (§4.3)",
+            transform=ax.transAxes, fontsize=9, color=TEXT_MUTED, ha="left")
+    ax.set_xlim(0, agg["mean"].max() + agg["sem"].max() + 0.004)
+    ax.grid(axis="x", alpha=0.5, color="white", linewidth=1.2, zorder=0)
+    for spine in ["top", "right", "left"]:
+        ax.spines[spine].set_visible(False)
+    ax.spines["bottom"].set_color("#CCCCCC")
+    ax.tick_params(axis="both", length=0)
+
+    plt.tight_layout()
     path = FIGURES_DIR / "fig3_dfg_resource.pdf"
-    fig.savefig(path)
-    fig.savefig(path.with_suffix(".png"))
+    fig.savefig(path, facecolor="white")
+    fig.savefig(path.with_suffix(".png"), facecolor="white")
     plt.close(fig)
     print(f"    → {path}")
 
@@ -444,40 +552,74 @@ def plot_layer_comparison(df: pd.DataFrame):
         print("    ⚠ Both layers required — skipping")
         return
 
-    fig, ax = plt.subplots(figsize=(8, 8))
+    PANEL_BG = "#FAFAF8"
+    TEXT_MUTED = "#6B6B6B"
+
+    fig, ax = plt.subplots(figsize=(9.5, 9.5))
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor(PANEL_BG)
+
+    # Real data clusters tightly around (0.49, 0.49), and three points
+    # (solar-10.7b, llama3.1-8b, yi-1.5-9b) sit within ~0.002-0.004 of each
+    # other in both dimensions -- close enough that full-name text labels
+    # collide regardless of repulsion strength. Numbered markers (alphabetic
+    # order, matching Table 4's row order) plus a compact in-plot index
+    # sidesteps the problem entirely: numbers are small enough to place
+    # cleanly even when points nearly coincide.
+    models_sorted = sorted(layer_data["model"].tolist())
+    index_of = {m: i + 1 for i, m in enumerate(models_sorted)}
 
     for _, row in layer_data.iterrows():
         model = row["model"]
         group = MODEL_REGISTRY.get(model, {}).get("group", "?")
         color = GROUP_COLORS.get(group, "#888888")
-        ax.scatter(row["A"], row["B"], c=color, s=120, alpha=0.8,
+        ax.scatter(row["A"], row["B"], c=color, s=210, alpha=0.9,
                    edgecolors="white", linewidth=1.5, zorder=3)
-        ax.annotate(model, (row["A"], row["B"]),
-                    textcoords="offset points", xytext=(8, 4), fontsize=8)
+        ax.text(row["A"], row["B"], str(index_of[model]), fontsize=8.5, zorder=4,
+                 ha="center", va="center", color="white", fontweight="bold")
 
-    # Reference line (equal bias in both layers)
-    lims = [0.35, 0.65]
-    ax.plot(lims, lims, "--", color="gray", alpha=0.5, zorder=1)
-    ax.axhline(0.5, color="gray", alpha=0.2, linewidth=0.8)
-    ax.axvline(0.5, color="gray", alpha=0.2, linewidth=0.8)
+    index_text = "\n".join(f"{i}. {m}" for m, i in sorted(index_of.items(), key=lambda kv: kv[1]))
+    ax.text(0.02, 0.98, index_text, transform=ax.transAxes, fontsize=8, color=TEXT_MUTED,
+             va="top", ha="left", linespacing=1.6,
+             bbox=dict(boxstyle="round,pad=0.5", facecolor="white", edgecolor="#DDDDDD", alpha=0.92))
+
+    # Reference line (equal bias in both layers). Zoom to the actual
+    # combined data range (union of A and B, padded) rather than a fixed
+    # 0.35-0.65 window: the real data spans roughly [0.42, 0.50], so the
+    # old fixed window left 90% of the plot empty and crushed all ten
+    # points into a small central cluster, which is what made labels
+    # unreadable regardless of repulsion. Equal aspect is kept so the
+    # diagonal reference stays meaningful.
+    all_vals = pd.concat([layer_data["A"], layer_data["B"]])
+    pad = (all_vals.max() - all_vals.min()) * 0.25
+    lims = [all_vals.min() - pad, all_vals.max() + pad]
+    ax.plot(lims, lims, "--", color="#AAAAAA", alpha=0.7, zorder=1)
+    ax.axhline(0.5, color="#AAAAAA", alpha=0.3, linewidth=0.8)
+    ax.axvline(0.5, color="#AAAAAA", alpha=0.3, linewidth=0.8)
 
     ax.set_xlim(lims)
     ax.set_ylim(lims)
-    ax.set_xlabel("Layer A — Translated Stereotypes (SS)")
-    ax.set_ylabel("Layer B — Culturally-Native Stereotypes (SS)")
-    ax.set_title("Translated vs. Culturally-Native Bias Scores\n"
-                 "(deviation from diagonal = cultural calibration gap)")
+    ax.set_xlabel("Layer A — Translated Stereotypes (SS)", color=TEXT_MUTED)
+    ax.set_ylabel("Layer B — Culturally-Native Stereotypes (SS)", color=TEXT_MUTED)
+    ax.set_title("Translated vs. Culturally-Native Bias Scores", fontsize=15,
+                 fontweight="bold", pad=28, loc="left")
+    ax.text(0, 1.035, "Deviation from the diagonal = cultural calibration gap",
+            transform=ax.transAxes, fontsize=9.5, color=TEXT_MUTED, ha="left")
     ax.set_aspect("equal")
-    ax.grid(alpha=0.2)
+    ax.grid(alpha=0.5, color="white", linewidth=1.2)
+    for spine in ["top", "right", "left", "bottom"]:
+        ax.spines[spine].set_color("#CCCCCC")
+    ax.tick_params(axis="both", length=0)
 
     # Legend
-    for group_key, label in GROUP_LABELS.items():
-        ax.scatter([], [], c=GROUP_COLORS[group_key], s=80, label=label)
-    ax.legend(loc="lower right", fontsize=9)
+    handles = [plt.Line2D([0], [0], marker="o", color="none", markerfacecolor=GROUP_COLORS[g],
+                           markeredgecolor="white", markersize=9, label=GROUP_LABELS[g])
+               for g in GROUP_LABELS]
+    ax.legend(handles=handles, loc="lower right", fontsize=9, framealpha=0.95, edgecolor="#DDDDDD")
 
     path = FIGURES_DIR / "fig4_layer_comparison.pdf"
-    fig.savefig(path)
-    fig.savefig(path.with_suffix(".png"))
+    fig.savefig(path, facecolor="white")
+    fig.savefig(path.with_suffix(".png"), facecolor="white")
     plt.close(fig)
     print(f"    → {path}")
 
@@ -520,21 +662,48 @@ def generate_tables(metrics: dict):
     print("\n▸ Generating LaTeX tables...")
 
     # Table 1: CLFI rankings
+    # Row-tinted by provenance group (very light versions of the same three
+    # hues used in every figure in the paper -- GROUP_COLORS at ~12% tint --
+    # so the table reads consistently with the rest of the figure set and
+    # provenance groupings are scannable at a glance, matching Table 4's
+    # level of visual polish. No value is bolded: the paper's own finding
+    # is that these rankings are not distinguishable from noise, so nothing
+    # here should visually imply a "winner".
+    GROUP_TINTS = {
+        "A_english_centric": "EAEEF6",
+        "B_multilingual_native": "EBF5ED",
+        "C_regional_centric": "F8EAEA",
+    }
+    GROUP_CODE = {
+        "A_english_centric": "A",
+        "B_multilingual_native": "B",
+        "C_regional_centric": "C",
+    }
     clfi = metrics["clfi"]
+    # Single-column table (matches the rest of the single-column body flow,
+    # not table*): "Multilingual-Native" was the width culprit, so the
+    # Provenance column now uses the A/B/C codes already established in
+    # Table 3 ("Multilingual-Native (B)" etc.) instead of the full label --
+    # row tint still carries the group identity redundantly.
     lines = [
         r"\begin{table}[t]",
         r"\centering",
-        r"\caption{Cross-Lingual Fairness Index (CLFI) Rankings. "
-        r"Higher CLFI indicates more equitable bias treatment across languages.}",
+        r"\small",
+        r"\caption{Cross-Lingual Fairness Index (CLFI) Rankings (nominal; see \S4.1 for the noise-floor test). "
+        r"Higher CLFI indicates more equitable bias treatment across languages. "
+        r"Provenance: A=English-Centric, B=Multilingual-Native, C=Regional-Centric "
+        r"(row tint matches Figure 1).}",
         r"\label{tab:clfi}",
-        r"\begin{tabular}{llcc}",
+        r"\begin{tabular}{lccc}",
         r"\toprule",
-        r"\textbf{Model} & \textbf{Provenance} & \textbf{CLFI} $\uparrow$ & \textbf{Mean DFG} $\downarrow$ \\",
+        r"\textbf{Model} & \textbf{Prov.} & \textbf{CLFI} $\uparrow$ & \textbf{DFG} $\downarrow$ \\",
         r"\midrule",
     ]
     for _, row in clfi.iterrows():
+        tint = GROUP_TINTS.get(row["model_group"], "FFFFFF")
+        code = GROUP_CODE.get(row["model_group"], "?")
         lines.append(
-            f"  {row['model']} & {row['model_group_label']} & "
+            f"  \\rowcolor[HTML]{{{tint}}} {row['model']} & {code} & "
             f"{row['clfi']:.3f} & {row['mean_dfg']:.4f} \\\\"
         )
     lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
@@ -556,26 +725,35 @@ def generate_tables(metrics: dict):
         r"\begin{table*}[t]",
         r"\centering",
         r"\small",
-        r"\caption{Stereotype Score (SS) by Model and Language. "
-        r"Values {>}0.5 indicate pro-stereotype bias (highlighted).}",
+        r"\caption{Stereotype Score (SS) by Model and Language. The value "
+        r"closest to ideal neutrality (0.500) in each language is highlighted. "
+        r"Values $<0.480$ indicate strong anti-stereotype bias (highlighted green).}",
         r"\label{tab:ss_matrix}",
         r"\begin{tabular}{l" + "c" * len(pivot.columns) + "}",
         r"\toprule",
         f"\\textbf{{Model}} & {lang_headers} \\\\",
         r"\midrule",
     ]
+    # Per column (language): bold the value closest to 0.5 neutrality;
+    # separately, cellcolor green any value < 0.48 (strong anti-stereotype).
+    # These are independent checks, not mutually exclusive or ordered --
+    # matches the scheme actually used in the released table.
+    closest_per_lang = {
+        lang: (pivot[lang] - 0.5).abs().idxmin() for lang in pivot.columns
+    }
     for model in pivot.index:
         vals = []
         for lang in pivot.columns:
             v = pivot.loc[model, lang]
             if pd.isna(v):
                 vals.append("--")
-            elif v > 0.52:
-                vals.append(f"\\cellcolor{{red!15}}{v:.3f}")
-            elif v < 0.48:
-                vals.append(f"\\cellcolor{{green!15}}{v:.3f}")
-            else:
-                vals.append(f"{v:.3f}")
+                continue
+            text = f"{v:.3f}"
+            if model == closest_per_lang[lang]:
+                text = f"\\textbf{{{text}}}"
+            if v < 0.48:
+                text = f"\\cellcolor{{green!15}}{text}"
+            vals.append(text)
         lines.append(f"  {model} & {' & '.join(vals)} \\\\")
 
     lines += [r"\bottomrule", r"\end{tabular}", r"\end{table*}"]
@@ -645,7 +823,7 @@ def main():
         print(f"{'═'*60}")
 
         plot_heatmap(metrics["model_lang"])
-        plot_clfi_radar(metrics["clfi"])
+        plot_clfi_radar(metrics["clfi"], df)
         plot_dfg_by_resource(metrics["dfg"])
         plot_layer_comparison(df)
         plot_ss_distribution(df)

@@ -67,7 +67,7 @@
   "group_averages": {
     "English-Centric": {
       "mean": 0.9847603401169889,
-      "ci_low": 0.9804499282373924,
+      "ci_low": 0.9804517130207002,
       "ci_high": 0.9887390956001363
     },
     "Multilingual-Native": {

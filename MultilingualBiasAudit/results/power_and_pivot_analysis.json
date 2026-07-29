@@ -1,0 +1,45 @@
+{
+  "power_analysis": {
+    "sigma_d_pooled": 0.23852,
+    "n_paired_observations": 27090,
+    "n_probes_current": 390,
+    "min_detectable_dfg_current": 0.033837,
+    "alpha": 0.05,
+    "power": 0.8,
+    "n_required": {
+      "0.004": 27909,
+      "0.005": 17862,
+      "0.01": 4466,
+      "0.013": 2643,
+      "0.02": 1117,
+      "0.046": 212,
+      "0.05": 179,
+      "0.08": 70,
+      "0.1": 45
+    }
+  },
+  "noise_floor_by_pivot": {
+    "by_pivot": {
+      "de": {
+        "mean_noise": 0.102839,
+        "median_noise": 0.070522,
+        "count": 2370
+      },
+      "fi": {
+        "mean_noise": 0.11554,
+        "median_noise": 0.077611,
+        "count": 2370
+      },
+      "ja": {
+        "mean_noise": 0.124195,
+        "median_noise": 0.084264,
+        "count": 2370
+      }
+    },
+    "median_spread_absolute": 0.013743,
+    "median_spread_relative": 0.1774,
+    "kruskal_H": 39.1077,
+    "kruskal_p": 3.2200616073939953e-09,
+    "floor_is_route_independent": true
+  }
+}

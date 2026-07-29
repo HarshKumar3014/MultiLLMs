@@ -1,7 +1,7 @@
 {
   "r_squared": 0.0153,
   "adj_r_squared": 0.0144,
-  "f_pvalue": 1.2916987822414905e-83,
+  "f_pvalue": 1.2916987822453273e-83,
   "coefficients": {
     "Intercept": {
       "coef": 0.539119,
