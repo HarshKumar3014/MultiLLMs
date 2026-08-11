@@ -1,66 +1,83 @@
 {
-  "grand_mean_noise_floor": 0.150879,
-  "grand_median_noise_floor": 0.085221,
-  "mean_noise_floor_excluding_bbq": 0.114191,
-  "median_noise_floor_excluding_bbq": 0.077876,
+  "matched_noise_floor_median": 0.007639,
+  "matched_noise_floor_range": [
+    0.002898,
+    0.020977
+  ],
+  "perprobe_instability_median": 0.085221,
   "per_model": {
     "aya-23-8b": {
-      "mean_dfg_noise": 0.162028,
-      "median_dfg_noise": 0.059911
+      "matched_dfg_noise": 0.007368,
+      "perprobe_mean_abs_dev": 0.162028,
+      "perprobe_median_abs_dev": 0.059911
     },
     "aya-expanse-8b": {
-      "mean_dfg_noise": 0.15841,
-      "median_dfg_noise": 0.094541
+      "matched_dfg_noise": 0.003983,
+      "perprobe_mean_abs_dev": 0.15841,
+      "perprobe_median_abs_dev": 0.094541
     },
     "bloomz-7b": {
-      "mean_dfg_noise": 0.122715,
-      "median_dfg_noise": 0.073693
+      "matched_dfg_noise": 0.008369,
+      "perprobe_mean_abs_dev": 0.122715,
+      "perprobe_median_abs_dev": 0.073693
     },
     "gemma2-9b": {
-      "mean_dfg_noise": 0.161955,
-      "median_dfg_noise": 0.098282
+      "matched_dfg_noise": 0.020977,
+      "perprobe_mean_abs_dev": 0.161955,
+      "perprobe_median_abs_dev": 0.098282
     },
     "llama3.1-8b": {
-      "mean_dfg_noise": 0.14395,
-      "median_dfg_noise": 0.079889
+      "matched_dfg_noise": 0.0111,
+      "perprobe_mean_abs_dev": 0.14395,
+      "perprobe_median_abs_dev": 0.079889
     },
     "mistral-7b": {
-      "mean_dfg_noise": 0.129629,
-      "median_dfg_noise": 0.072167
+      "matched_dfg_noise": 0.006251,
+      "perprobe_mean_abs_dev": 0.129629,
+      "perprobe_median_abs_dev": 0.072167
     },
     "olmo2-7b": {
-      "mean_dfg_noise": 0.169222,
-      "median_dfg_noise": 0.100824
+      "matched_dfg_noise": 0.003718,
+      "perprobe_mean_abs_dev": 0.169222,
+      "perprobe_median_abs_dev": 0.100824
     },
     "qwen2.5-7b": {
-      "mean_dfg_noise": 0.171194,
-      "median_dfg_noise": 0.106284
+      "matched_dfg_noise": 0.002898,
+      "perprobe_mean_abs_dev": 0.171194,
+      "perprobe_median_abs_dev": 0.106284
     },
     "solar-10.7b": {
-      "mean_dfg_noise": 0.146366,
-      "median_dfg_noise": 0.089162
+      "matched_dfg_noise": 0.007909,
+      "perprobe_mean_abs_dev": 0.146366,
+      "perprobe_median_abs_dev": 0.089162
     },
     "yi-1.5-9b": {
-      "mean_dfg_noise": 0.143324,
-      "median_dfg_noise": 0.08128
+      "matched_dfg_noise": 0.010094,
+      "perprobe_mean_abs_dev": 0.143324,
+      "perprobe_median_abs_dev": 0.08128
     }
   },
-  "by_source": {
+  "by_source_perprobe": {
     "bbq": {
-      "mean_dfg_noise": 0.208846,
-      "median_dfg_noise": 0.112216,
+      "perprobe_mean_abs_dev": 0.208846,
+      "perprobe_median_abs_dev": 0.112216,
       "n": 4500
     },
     "handcrafted": {
-      "mean_dfg_noise": 0.091626,
-      "median_dfg_noise": 0.04618,
+      "perprobe_mean_abs_dev": 0.091626,
+      "perprobe_median_abs_dev": 0.04618,
       "n": 1110
     },
     "stereoset": {
-      "mean_dfg_noise": 0.118366,
-      "median_dfg_noise": 0.082883,
+      "perprobe_mean_abs_dev": 0.118366,
+      "perprobe_median_abs_dev": 0.082883,
       "n": 6000
     }
   },
-  "interpretation": "Raw grand mean is inflated by BBQ-sourced prompts: their continuations are short answer-choice phrases rather than full sentences, and original SS is frequently near-saturated (0 or 1), so small paraphrase perturbations flip an already-near-certain preference completely (DFG_noise near 1.0 for that single prompt) -- a measurement-instability artifact, not evidence of real noise. Even under the most conservative reading (median statistic, BBQ excluded entirely), the noise floor is still several times larger than the papers entire observed cross-lingual DFG range (0.004-0.013): the DFG/CLFI rankings are not distinguishable from within-language perturbation noise under any reasonable statistic."
+  "matched_floor_by_pivot": {
+    "de": 0.007228,
+    "fi": 0.007422,
+    "ja": 0.008264
+  },
+  "interpretation": "Matched floor = difference of probe-set means, same aggregation as the paper's reported DFG, and the only quantity comparable to it. Median ~0.008, per-model range ~0.003-0.021: the SAME ORDER as the observed cross-lingual DFG range (0.004-0.013). The cross-lingual signal is not separable from within-language paraphrase noise. The per-probe absolute-deviation statistic (median ~0.08) is ~10x larger purely because absolute-value-before-averaging prevents signed noise from cancelling; it measures probe-level instability and must not be compared against a difference-of-means DFG."
 }

@@ -202,24 +202,40 @@ def run_noise_floor_for_model(model_key: str, en_prompts: list[dict], paraphrase
 
 def compute_dfg_noise(all_noise_df: pd.DataFrame) -> pd.DataFrame:
     """
-    DFG_noise(model, seed) = |SS(paraphrase) - SS(original)|, per prompt then averaged.
+    Two DISTINCT quantities, which must not be confused (an earlier version of
+    this script conflated them):
 
-    The raw mean is not a reliable summary here: BBQ-sourced prompts score
-    "continuations" that are short answer-choice phrases rather than full
-    sentences, and their original SS is frequently near-saturated (0 or 1) —
-    small wording perturbations then flip an already-near-certain preference
-    completely, producing individual DFG_noise values near 1.0 that are a
-    measurement-instability artifact of that scoring setup, not "real" noise.
-    We therefore report median alongside mean, and break out BBQ separately,
-    rather than collapsing everything into one number that a BBQ-driven tail
-    can dominate.
+    (a) MATCHED noise floor -- the only quantity comparable to the paper's
+        reported DFG. The reported DFG is a *difference of probe-set means*,
+        |mean(SS_lang) - mean(SS_en)|, so its noise analogue must also be a
+        difference of means:
+
+            DFG_noise(model, pivot) = |mean(SS_para(pivot)) - mean(SS_orig)|
+
+        averaged over pivots, exactly mirroring how the reported DFG averages
+        over the 7 non-English languages.
+
+    (b) PER-PROBE instability -- mean over probes of |SS_para - SS_orig|.
+        This is a legitimate and useful statistic (how much an individual
+        probe's score moves under paraphrase) but it is roughly an order of
+        magnitude LARGER than (a), because taking absolute values before
+        averaging does not let signed per-probe noise cancel, whereas a
+        difference of means does. It therefore CANNOT be compared against a
+        difference-of-means DFG. We keep it because it corroborates the
+        per-probe variance driving the power analysis (07_power_analysis.py),
+        but we report it under its own name.
+
+    BBQ-sourced prompts score short answer-choice continuations whose original
+    SS is frequently near-saturated (0 or 1); small perturbations flip an
+    already-near-certain preference, inflating (b) in particular. We break
+    BBQ out rather than pooling it silently.
     """
     orig = all_noise_df[all_noise_df["seed"] == -1][["model", "prompt_id", "stereotype_score"]] \
         .rename(columns={"stereotype_score": "ss_original"})
     para = all_noise_df[all_noise_df["seed"] != -1]
 
     merged = para.merge(orig, on=["model", "prompt_id"])
-    merged["dfg_noise"] = (merged["stereotype_score"] - merged["ss_original"]).abs()
+    merged["abs_dev"] = (merged["stereotype_score"] - merged["ss_original"]).abs()
 
     # attach source (bbq / stereoset / handcrafted) so it can be reported separately
     prompts_path = DATA_DIR / "prompts.json"
@@ -229,25 +245,35 @@ def compute_dfg_noise(all_noise_df: pd.DataFrame) -> pd.DataFrame:
                  for p in prompts if p["language"] == "en" and p["layer"] == "A"}
     merged["source"] = merged["prompt_id"].map(src_by_id)
 
-    summary = (
-        merged.groupby(["model", "seed"])["dfg_noise"]
-        .mean()
-        .reset_index()
+    # (a) matched floor: difference of means, per model x pivot, then over pivots
+    matched_per_pivot = (
+        merged.groupby(["model", "pivot"])
+        .apply(lambda g: abs(g["stereotype_score"].mean() - g["ss_original"].mean()),
+               include_groups=False)
+        .rename("matched_floor").reset_index()
     )
     overall = (
-        merged.groupby("model")["dfg_noise"]
-        .agg(["mean", "median", "std"])
-        .rename(columns={"mean": "mean_dfg_noise", "median": "median_dfg_noise", "std": "std_dfg_noise"})
-        .reset_index()
+        matched_per_pivot.groupby("model")["matched_floor"].mean()
+        .rename("matched_dfg_noise").reset_index()
     )
+    # (b) per-probe instability, same grouping
+    overall = overall.merge(
+        merged.groupby("model")["abs_dev"]
+        .agg(["mean", "median"])
+        .rename(columns={"mean": "perprobe_mean_abs_dev",
+                         "median": "perprobe_median_abs_dev"})
+        .reset_index(),
+        on="model")
+
     by_source = (
-        merged.groupby("source")["dfg_noise"]
+        merged.groupby("source")["abs_dev"]
         .agg(["mean", "median", "count"])
-        .rename(columns={"mean": "mean_dfg_noise", "median": "median_dfg_noise", "count": "n"})
+        .rename(columns={"mean": "perprobe_mean_abs_dev",
+                         "median": "perprobe_median_abs_dev", "count": "n"})
         .reset_index()
     )
     no_bbq = merged[merged["source"] != "bbq"]
-    return summary, overall, by_source, no_bbq
+    return matched_per_pivot, overall, by_source, no_bbq
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -315,43 +341,50 @@ def main():
     by_source.to_csv(RESULTS_DIR / "noise_floor_by_source.csv", index=False)
 
     print(f"\n{'═'*70}")
-    print("  NOISE FLOOR SUMMARY (DFG_noise = |SS(paraphrase) - SS(original English)|)")
+    print("  NOISE FLOOR SUMMARY")
     print(f"{'═'*70}")
-    print(overall.to_string(index=False))
-    print(f"\n  By source (BBQ answer-choice continuations are near-saturated and unstable "
-          f"under perturbation — treat separately, not as representative 'noise'):")
-    print(by_source.to_string(index=False))
+    print("  matched_dfg_noise = |mean(SS_para) - mean(SS_orig)|, averaged over pivots")
+    print("     ^ the ONLY column comparable to the paper's reported DFG")
+    print("  perprobe_* = mean/median over probes of |SS_para - SS_orig|")
+    print("     ^ probe-level instability; ~10x larger by construction, NOT comparable to DFG")
+    print()
+    print(overall.round(4).to_string(index=False))
+    print(f"\n  By source (per-probe; BBQ answer-choice continuations are near-saturated "
+          f"and unstable under perturbation):")
+    print(by_source.round(4).to_string(index=False))
 
-    grand_mean = float(overall["mean_dfg_noise"].mean())
-    grand_median = float(overall["median_dfg_noise"].median())
-    no_bbq_mean = float(no_bbq["dfg_noise"].mean())
-    no_bbq_median = float(no_bbq["dfg_noise"].median())
-    print(f"\n  Grand mean (all sources):        {grand_mean:.4f}")
-    print(f"  Grand median (all sources):       {grand_median:.4f}")
-    print(f"  Mean, BBQ excluded:               {no_bbq_mean:.4f}")
-    print(f"  Median, BBQ excluded:             {no_bbq_median:.4f}")
-    print(f"  Compare against Table 2's DFG range (0.004-0.013) in the paper.")
-    print(f"  Any model×language DFG below this is NOT distinguishable from within-language noise.")
+    matched_median = float(overall["matched_dfg_noise"].median())
+    matched_lo = float(overall["matched_dfg_noise"].min())
+    matched_hi = float(overall["matched_dfg_noise"].max())
+    perprobe_median = float(overall["perprobe_median_abs_dev"].median())
+
+    print(f"\n  MATCHED noise floor: median {matched_median:.4f} "
+          f"(per-model range {matched_lo:.4f}-{matched_hi:.4f})")
+    print(f"  Per-probe instability (different quantity): median {perprobe_median:.4f}")
+    print(f"  Paper's observed cross-lingual DFG range: 0.004-0.013")
+    print(f"  -> observed DFG is the SAME ORDER as the matched floor: the cross-lingual")
+    print(f"     signal is not separable from within-language paraphrase noise.")
 
     with open(RESULTS_DIR / "noise_floor_verdict.json", "w") as f:
         json.dump({
-            "grand_mean_noise_floor": round(grand_mean, 6),
-            "grand_median_noise_floor": round(grand_median, 6),
-            "mean_noise_floor_excluding_bbq": round(no_bbq_mean, 6),
-            "median_noise_floor_excluding_bbq": round(no_bbq_median, 6),
-            "per_model": overall.set_index("model")[["mean_dfg_noise", "median_dfg_noise"]].round(6).to_dict("index"),
-            "by_source": by_source.set_index("source").round(6).to_dict("index"),
+            "matched_noise_floor_median": round(matched_median, 6),
+            "matched_noise_floor_range": [round(matched_lo, 6), round(matched_hi, 6)],
+            "perprobe_instability_median": round(perprobe_median, 6),
+            "per_model": overall.set_index("model").round(6).to_dict("index"),
+            "by_source_perprobe": by_source.set_index("source").round(6).to_dict("index"),
             "interpretation": (
-                "Raw grand mean is inflated by BBQ-sourced prompts: their continuations are "
-                "short answer-choice phrases rather than full sentences, and original SS is "
-                "frequently near-saturated (0 or 1), so small paraphrase perturbations flip an "
-                "already-near-certain preference completely (DFG_noise near 1.0 for that single "
-                "prompt) -- a measurement-instability artifact, not evidence of 'real' noise. "
-                "Even under the most conservative reading (median statistic, BBQ excluded "
-                "entirely), the noise floor is still several times larger than the paper's "
-                "entire observed cross-lingual DFG range (0.004-0.013): the DFG/CLFI rankings "
-                "are not distinguishable from within-language perturbation noise under any "
-                "reasonable statistic."
+                "The matched floor is a difference of probe-set means, the same "
+                "aggregation as the paper's reported DFG, and is the only quantity "
+                "comparable to it. Its median is ~0.008 with a per-model range of "
+                "roughly 0.003-0.021, i.e. the SAME ORDER OF MAGNITUDE as the observed "
+                "cross-lingual DFG range (0.004-0.013). The cross-lingual signal is "
+                "therefore not separable from within-language paraphrase noise; it is "
+                "NOT the case that the floor is several times larger than the signal. "
+                "The per-probe absolute-deviation statistic (median ~0.08) is roughly an "
+                "order of magnitude larger purely because taking absolute values before "
+                "averaging prevents signed per-probe noise from cancelling; it measures "
+                "probe-level instability and must not be compared against a "
+                "difference-of-means DFG."
             ),
         }, f, indent=2)
     print(f"\n  → {RESULTS_DIR / 'noise_floor_verdict.json'}")

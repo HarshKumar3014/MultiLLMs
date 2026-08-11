@@ -87,9 +87,12 @@ def main():
     groups = [MODEL_REGISTRY[m]["group"] for m in models]
     colors = [GROUP_COLORS[g] for g in groups]
 
-    noise_lo = noise["median_dfg_noise"].min()
-    noise_hi = noise["median_dfg_noise"].max()
-    noise_grand_median = float(noise["median_dfg_noise"].median())
+    # matched_dfg_noise: |mean(SS_para) - mean(SS_orig)|, i.e. the SAME
+    # aggregation as the plotted DFG. The per-probe absolute-deviation column
+    # is ~10x larger by construction and must not be used as the band here.
+    noise_lo = noise["matched_dfg_noise"].min()
+    noise_hi = noise["matched_dfg_noise"].max()
+    noise_grand_median = float(noise["matched_dfg_noise"].median())
 
     fig, ax = plt.subplots(figsize=(8.2, 6.2))
     fig.patch.set_facecolor("white")
@@ -133,9 +136,10 @@ def main():
     ax.set_xlim(0, x_max)
     ax.set_xlabel("Deployment Fairness Gap (DFG), mean $\\pm$ 95% bootstrap CI",
                   fontsize=11, color=TEXT_MUTED)
-    ax.set_title("No model's DFG clears the within-language noise floor",
+    ax.set_title("Cross-lingual DFG is the same size as within-language noise",
                  fontsize=15, fontweight="bold", pad=28, loc="left")
-    ax.text(0, 1.03, "Point = observed mean DFG · bar = 95% CI · shaded zone = measured noise-floor range",
+    ax.text(0, 1.03, "Point = observed mean DFG · bar = 95% CI · shaded zone = noise floor, "
+                     "measured at the same aggregation",
             transform=ax.transAxes, fontsize=9.5, color=TEXT_MUTED, ha="left")
 
     ax.grid(axis="x", alpha=0.5, zorder=0, color="white", linewidth=1.2)
