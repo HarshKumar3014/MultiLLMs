@@ -1,8 +1,0 @@
-{
-  "converged": true,
-  "n_obs": 21630,
-  "n_groups_base_prompt_id": 408,
-  "resource_numeric_coef": 0.000395,
-  "resource_numeric_pvalue": 0.838379,
-  "significant": false
-}

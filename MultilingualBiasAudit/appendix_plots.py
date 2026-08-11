@@ -1,9 +1,22 @@
+"""
+appendix_plots.py — Per-category CLFI figure (Appendix)
+
+Generates fig6_category_clfi: mean CLFI computed independently per bias
+category. Descriptive only; see the noise-floor result in the paper before
+reading any per-category ordering as meaningful.
+
+Usage:
+    python appendix_plots.py
+"""
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-df = pd.read_csv('results/all_results.csv')
+from config import RESULTS_DIR, FIGURES_DIR
+
+df = pd.read_csv(RESULTS_DIR / 'all_results.csv')
 
 top_cats = df.groupby('category')['prompt_id'].count().nlargest(10).index
 models = sorted(df['model'].unique())
@@ -37,5 +50,6 @@ plt.xlabel('Mean Cross-Lingual Fairness Index (CLFI)')
 plt.ylabel('Bias Category')
 plt.title('CLFI by Bias Category (with Std Dev)')
 plt.tight_layout()
-plt.savefig('icml2026/figures/fig6_category_clfi.pdf')
+plt.savefig(FIGURES_DIR / 'fig6_category_clfi.pdf')
+plt.savefig(FIGURES_DIR / 'fig6_category_clfi.png', dpi=300)
 plt.close()
