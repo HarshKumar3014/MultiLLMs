@@ -46,6 +46,12 @@ Scripts run in numeric order. Only `02` needs a GPU.
 | `07_power_analysis.py` | Power analysis + per-pivot floor breakdown. | – |
 | `08_robustness_figure.py` | Figure 7 — drop-BLOOMZ group means. | – |
 | `appendix_plots.py` | Figure 6 — per-category CLFI. | – |
+| `09_reanalysis.py` | Revision reanalysis: collapsed-pair audit, Layer-A-only paired DFG, sign-flip permutation + BH-FDR per cell, analytic null, bootstrap DFG − own floor, binary SS, probe-level variance decomposition, paraphrase fidelity, regression refit. Regenerates Tables 1/6/9 and Figure 1a. | – |
+| `10_positive_control.py` | `--synthetic`: spike-in power curve (CPU). Default: stereotype-priming prefix positive control (en, fr). | ✅ |
+| `11_add_language.py` | Adds a language post hoc (default Amharic) with all-field back-translation and collapse checks. | ✅ (score) |
+| `12_human_paraphrase.py` | 100-probe human-written paraphrase set as a 4th noise-floor pivot. | ✅ (score) |
+
+GPU steps for the revision: see [`GPU_RUNBOOK.md`](MultilingualBiasAudit/GPU_RUNBOOK.md) and `run_gpu_extensions.sh`.
 
 ```bash
 pip install -r requirements.txt

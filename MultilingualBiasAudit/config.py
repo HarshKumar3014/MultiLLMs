@@ -13,7 +13,12 @@ RESULTS_DIR = PROJECT_ROOT / "results"
 FIGURES_DIR = PROJECT_ROOT / "paper" / "figures"
 TABLES_DIR = PROJECT_ROOT / "paper" / "tables"
 
-for _d in [DATA_DIR, RESULTS_DIR, FIGURES_DIR, TABLES_DIR]:
+# Scores from the fixed scorer (02_run_audit.continuation_span, v2). v1 scores
+# in RESULTS_DIR/*.csv skipped the first continuation token for 9/10 models
+# and are kept only for the record; never resume into them.
+SCORES_DIR = RESULTS_DIR / "v2"
+
+for _d in [DATA_DIR, RESULTS_DIR, FIGURES_DIR, TABLES_DIR, SCORES_DIR]:
     _d.mkdir(parents=True, exist_ok=True)
 
 # ── Languages ─────────────────────────────────────────────────────────────────
@@ -32,6 +37,16 @@ LANGUAGES = {
 
 LANG_CODES = list(LANGUAGES.keys())
 NON_EN_CODES = [c for c in LANG_CODES if c != "en"]
+
+# Languages added after the main audit (11_add_language.py). Kept out of
+# LANGUAGES so 01-08 still reproduce the original 8-language numbers;
+# 09_reanalysis.py picks them up from results/extra_lang/ when present.
+# Amharic: second low-resource language with gendered 3sg pronouns/verb
+# agreement (ǝssu / ǝsswa), so he/she minimal pairs survive translation —
+# unlike Swahili (a-) or Yoruba (ó), which would collapse them.
+EXTRA_LANGUAGES = {
+    "am": {"name": "Amharic", "resource": "low", "script": "Ge'ez", "deepl": "am"},
+}
 
 # ── Model Registry ────────────────────────────────────────────────────────────
 # 10 models in 3 provenance groups

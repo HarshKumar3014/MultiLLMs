@@ -40,7 +40,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from config import DATA_DIR, RESULTS_DIR, MODEL_REGISTRY, MODEL_NAMES, ANALYSIS
+from config import DATA_DIR, SCORES_DIR as RESULTS_DIR, MODEL_REGISTRY, MODEL_NAMES, ANALYSIS
 
 
 def _free_model_cache(hf_id: str):
@@ -330,7 +330,10 @@ def main():
                                         free_cache=not args.keep_model_cache)
         all_dfs.append(df)
 
-    merged = pd.concat(all_dfs, ignore_index=True)
+    # merge every per-model checkpoint on disk (not just this invocation's
+    # models) so one-model-at-a-time runs accumulate; skip 12_'s extra pivots
+    merged = pd.concat([pd.read_csv(f) for f in sorted(CHECKPOINT_DIR.glob("*_noise_floor.csv"))],
+                       ignore_index=True)
     merged_path = RESULTS_DIR / "noise_floor_all_results.csv"
     merged.to_csv(merged_path, index=False)
     print(f"\n  ✓ Merged noise-floor results → {merged_path}")
