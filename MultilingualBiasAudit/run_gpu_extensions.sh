@@ -18,9 +18,12 @@ if [[ -n "${HF_TOKEN:-}" ]]; then
 fi
 
 # 1. Amharic: translate + validate (CPU, ~25 min, needs internet) if not done yet
+# non-fatal: a translation rate-limit must not block the re-scoring below
 if [[ ! -f data/validation_am.json ]]; then
-  python 11_add_language.py --lang am --build
+  python 11_add_language.py --lang am --build || echo "⚠ Amharic build failed — skipping Amharic; re-run later"
 fi
+AM=0
+if [[ -f data/validation_am.json ]] && python -c "import json,sys; sys.exit(len(json.load(open('data/validation_am.json'))) < 387)"; then AM=1; fi
 
 # 2. Human paraphrases, if the filled CSV has been uploaded
 HUMAN=0
@@ -33,7 +36,7 @@ for m in ${MODELS:-llama3.1-8b mistral-7b olmo2-7b gemma2-9b aya-23-8b aya-expan
   # re-score the main audit and the noise floor with the fixed scorer (v2)
   python 02_run_audit.py --resume --no-completions --models "$m"
   python 05_noise_floor.py --resume --keep-model-cache --models "$m"
-  python 11_add_language.py --lang am --score --resume --models "$m"
+  if [[ $AM == 1 ]]; then python 11_add_language.py --lang am --score --resume --models "$m"; fi
   python 10_positive_control.py --resume --models "$m" --langs en fr
   if [[ $HUMAN == 1 ]]; then python 12_human_paraphrase.py --score --resume --models "$m"; fi
   python - "$m" <<'EOF'
