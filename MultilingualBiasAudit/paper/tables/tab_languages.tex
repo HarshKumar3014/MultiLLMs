@@ -1,0 +1,26 @@
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccccccccc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Score}} & \multicolumn{2}{c}{\textbf{Drop vs.\ English}} & \multicolumn{2}{c}{\textbf{Reliable drops}} & \multicolumn{2}{c}{\textbf{Carry-over}} & \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+\textbf{Language} & soft & binary & mean & 95\% CI & soft & binary & slope & same choice & \textbf{Fluency} \\
+\midrule
+English & 0.536 & 0.63 & -- & -- & -- & -- & -- & -- & 0.76 \\
+\midrule
+Spanish & 0.528 & 0.57 & 0.007 & [0.002, 0.011] & 0/10 & 1/10 & 0.37 & 63\% & 0.65 \\
+French & 0.519 & 0.57 & 0.017 & [0.012, 0.021] & 1/10 & 2/10 & 0.38 & 62\% & 0.67 \\
+Chinese & 0.517 & 0.54 & 0.019 & [0.012, 0.027] & 3/10 & 8/10 & 0.36 & 58\% & 0.72 \\
+Arabic & 0.516 & 0.56 & 0.020 & [0.012, 0.027] & 5/10 & 6/10 & 0.18 & 59\% & 0.66 \\
+Korean & 0.510 & 0.54 & 0.026 & [0.016, 0.035] & 5/10 & 7/10 & 0.14 & 56\% & 0.64 \\
+Swahili & 0.505 & 0.51 & 0.029 & [0.017, 0.041] & 6/10 & 9/10 & 0.26 & 54\% & 0.63 \\
+Hindi & 0.506 & 0.54 & 0.030 & [0.022, 0.038] & 8/10 & 6/10 & 0.15 & 57\% & 0.61 \\
+\midrule
+English reworded & -- & -- & 0.008 & -- & 0/10 & -- & 0.66 & 70\% & -- \\
+\bottomrule
+\end{tabular}
+\caption{Results per language, averaged over the ten models. \textbf{Score}: mean stereotype score (soft) and share of items on which the stereotyped continuation wins (binary). \textbf{Drop}: how far the mean score falls below English (95\% interval across models). \textbf{Reliable drops}: models whose drop survives a permutation test with false-discovery correction, using soft or binary scores. \textbf{Carry-over}: slope of the translated score on the English score for the same item (1 = fully kept), and how often the model picks the same continuation in both versions. \textbf{Fluency}: how well the model tells the two candidate continuations from the unrelated one. Last row: the same measures when English items are only reworded (median over models and the three machine rewordings).}
+\label{tab:languages}
+\end{table*}

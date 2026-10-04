@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Items kept} & \textbf{Pairs} & \textbf{Drop} & \textbf{Below En.} & \textbf{Slope} \\
+\midrule
+All & 24,970 & 0.021 & 70/70 & 0.26 \\
+Faithful translation & 15,950 & 0.016 & 61/70 & 0.29 \\
+\quad + equal fluency & 6,995 & 0.009 & 54/70 & 0.40 \\
+\bottomrule
+\end{tabular}
+\caption{Restricting to translations whose back-translation stays close to the original (similarity $\ge 0.9$), and further to items on which the model is about as fluent as in English (fluency within 0.1), halves the drop and raises carry-over, but most model--language pairs still score below English. \textbf{Below En.}: model--language pairs with a negative mean change.}
+\label{tab:controls}
+\end{table}

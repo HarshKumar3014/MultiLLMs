@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Rewording} & \textbf{Sim.} & \textbf{Same} & \textbf{Floor} & \textbf{Slope} & \textbf{Agree} \\
+\midrule
+\multicolumn{6}{l}{\emph{All items}} \\
+via German & 0.93 & 28\% & 0.002 & 0.74 & 74\% \\
+via Finnish & 0.91 & 16\% & 0.008 & 0.70 & 71\% \\
+via Japanese & 0.90 & 9\% & 0.010 & 0.53 & 65\% \\
+\multicolumn{6}{l}{\emph{100-item subset}} \\
+via German & 0.92 & 28\% & 0.030 & 0.72 & 72\% \\
+via Finnish & 0.91 & 18\% & 0.019 & 0.79 & 71\% \\
+via Japanese & 0.89 & 9\% & 0.026 & 0.39 & 64\% \\
+LLM rewrite & 0.95 & 0\% & 0.005 & 0.80 & 85\% \\
+\bottomrule
+\end{tabular}
+\caption{How the noise floor depends on the rewording. \textbf{Sim.}: embedding similarity to the original; \textbf{Same}: share of fields returned unchanged; \textbf{Floor}: median over models of the gap between English and its rewording; \textbf{Slope}, \textbf{Agree}: carry-over of the English preference, as in \Cref{tab:languages}.}
+\label{tab:floor}
+\end{table}
