@@ -53,6 +53,9 @@ Scripts run in numeric order. `02`, `05`, `10`–`12` need a GPU (see `Multiling
 | `11_add_language.py` | Adds a language post hoc (default Amharic) with all-field back-translation and collapse checks. | ✅ (score) |
 | `12_human_paraphrase.py` | 100-item LLM-written rewording set as a 4th noise-floor pivot (labelled `llm`). | ✅ (score) |
 | `13_paper_figures.py` | Every number, figure and main table in the paper (`results/reanalysis/paper_numbers.json`). | – |
+| `14_pipeline_ablation.py` | Reruns the analysis under each combination of the three pipeline errors (paper's pipeline table). | – |
+| `15_robustness_checks.py` | Summed vs. per-token log-probability, length controls, per-language filters, 200-run injected-shift check. | – |
+| `16_review2_checks.py` | Crossed mixed model (item × model), nested faithful-translation filter with paired bootstrap, results by source, length + word-frequency controls. Run after `13`. | – |
 
 GPU steps for the revision: see [`GPU_RUNBOOK.md`](MultilingualBiasAudit/GPU_RUNBOOK.md) and `run_gpu_extensions.sh`.
 

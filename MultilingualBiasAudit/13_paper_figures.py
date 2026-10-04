@@ -577,29 +577,8 @@ def main():
              r"\label{tab:floor}", r"\end{table}"]
     (TABLES_DIR / "tab_floor.tex").write_text("\n".join(rows) + "\n")
 
-    # ── Table: what translation quality and fluency explain (from 15_robustness_checks.py) ──
+    # (Table "controls" is written by 16_review2_checks.py: nested filter + paired bootstrap)
     rb = json.load(open(OUT / "robustness_checks.json"))
-    fl_ = rb["filters"]
-    cols_c = order
-    rows = [r"\begin{table*}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{3pt}",
-            r"\begin{tabular}{l" + "c" * (len(cols_c) + 3) + "}", r"\toprule",
-            r"\textbf{Items kept} & \textbf{Pairs} & " + " & ".join(rf"\textbf{{{LANG_NAME[l]}}}" for l in cols_c) +
-            r" & \textbf{Equal wt.} & \textbf{Slope} \\", r"\midrule"]
-    names = {"all": "All", "faithful": "Faithful translation",
-             "faithful_fluent_nobbq": "\\quad + equal fluency (no BBQ)"}
-    for k in ["all", "faithful", "faithful_fluent_nobbq"]:
-        q = fl_[k]
-        rows.append(f"{names[k]} & {q['n']:,} & " + " & ".join(f"{q['drop_by_lang'][l]:.3f}" for l in cols_c) +
-                    f" & {q['drop_equal_weight']:.3f} & {q['slope_pooled']:.2f} \\\\")
-    rows += [r"\bottomrule", r"\end{tabular}",
-             r"\caption{Drop below English per language when only some translated items are kept. "
-             r"\textbf{Faithful}: back-translation similarity $\ge 0.9$. \textbf{Equal fluency}: additionally, the "
-             r"model separates the two candidate continuations from the unrelated one about as well as in English "
-             r"(within 0.1); BBQ items are excluded here because their third option is an ``unknown'' answer rather "
-             r"than an unrelated sentence. \textbf{Equal wt.}: mean over languages, so that filtering cannot "
-             r"change the result by changing the language mix. \textbf{Slope}: carry-over.}",
-             r"\label{tab:controls}", r"\end{table*}"]
-    (TABLES_DIR / "tab_controls.tex").write_text("\n".join(rows) + "\n")
 
     # ── Table: summed instead of per-token log-probability ──
     sm = rb["summed"]
