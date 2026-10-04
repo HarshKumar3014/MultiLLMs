@@ -57,6 +57,8 @@ Scripts run in numeric order. `02`, `05`, `10`–`12` need a GPU (see `Multiling
 | `15_robustness_checks.py` | Summed vs. per-token log-probability, length controls, per-language filters, 200-run injected-shift check. | – |
 | `16_review2_checks.py` | Crossed mixed model (item × model), nested faithful-translation filter with paired bootstrap, results by source, length + word-frequency controls. Run after `13`. | – |
 | `17_review3_checks.py` | Results by source (incl. BBQ + written only), mixed model testing each translation against rewording, and the 210-item contrast-preservation sample (`data/contrast_judgment_sample.csv`, LLM-judged). Run after `16`. | – |
+| `18_review_gpu_runs.py` + `run_gpu_review.sh` | GPU: rewords Hindi/Spanish items within the language (Aya-Expanse-32B, validated) and scores them plus StereoSet without its blank context. | ✅ |
+| `19_review_runs_analysis.py` | Within-language vs cross-language carry-over; StereoSet without context. | – |
 
 GPU steps for the revision: see [`GPU_RUNBOOK.md`](MultilingualBiasAudit/GPU_RUNBOOK.md) and `run_gpu_extensions.sh`.
 

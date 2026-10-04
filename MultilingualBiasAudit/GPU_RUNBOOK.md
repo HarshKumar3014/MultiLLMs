@@ -69,3 +69,31 @@ a runtime reset. Run a subset per session with
   detected (q < .05) with opposite signs, `neutral` not detected.
 - `results/reanalysis/summary.json` gains `extra_languages: ["am"]` and, with
   human paraphrases, a `human_pivot` block.
+
+## Review round 3: target-language rewording + StereoSet without context
+
+`run_gpu_review.sh` (~1.5–2 h on an A100 80 GB, ~$2–3):
+
+1. Rewords every Hindi and Spanish item in the same language with
+   **Aya-Expanse-32B** (not one of the audited models), validates each
+   rewording (pair still differs, contrast words kept, meaning close), and
+   retries failures once.
+2. Scores the rewordings and StereoSet sentences *without* their blank
+   context with all ten models.
+3. Runs `19_review_runs_analysis.py` → `paper/tables/tab_review_runs.tex`.
+
+Before starting:
+- Accept the licence of `CohereLabs/aya-expanse-32b` on Hugging Face.
+- Rent an instance with **≥ 150 GB disk** (the 32B model is a ~65 GB download).
+  With a 40 GB GPU the rewriter loads in 4-bit automatically.
+- Smaller fallback if the 32B model is a problem:
+  `REWRITER=Qwen/Qwen2.5-14B-Instruct bash run_gpu_review.sh` (weaker Hindi).
+
+```bash
+git clone -b naacl-revision <repo-url> && cd MultiLLMs/MultilingualBiasAudit
+pip install -r requirements.txt
+export HF_TOKEN=hf_...
+bash run_gpu_review.sh 2>&1 | tee review.log
+zip -r review_results.zip results/v2/review_runs data/target_rewordings.json review.log
+```
+Copy `review_results.zip` back and unzip it in `MultilingualBiasAudit/`.
