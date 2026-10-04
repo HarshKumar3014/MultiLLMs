@@ -368,6 +368,96 @@ def main():
     grp = {m: MODEL_REGISTRY[m]["group_label"] for m in N["clfi"]}
     sig = cells.groupby("model")["q_bh"].apply(lambda q: int((q < .05).sum()))
 
+    # ── Is the item-level signal in other languages systematic or noise? ──
+    import itertools
+    models_ = sorted(a["model"].unique())
+
+    def xmodel(frame, key, val="stereotype_score"):
+        w = frame.pivot_table(index=key, columns="model", values=val)
+        return float(np.mean([w[m1].corr(w[m2]) for m1, m2 in itertools.combinations(models_, 2)]))
+
+    agree_rows = {"en": {"scores": xmodel(a[a["language"] == "en"], "base_prompt_id")}}
+    for l in order:
+        g = paired[paired["language"] == l]
+        b_ = np.polyfit(g["x"], g["y"], 1)
+        agree_rows[l] = {"scores": xmodel(a[a["language"] == l], "base_prompt_id"),
+                         "change": xmodel(g, "base_prompt_id", "d"), "sd_change": float(g["d"].std()),
+                         "center": float(0.5 + b_[1])}
+    for pv in ["de", "fi", "ja"]:
+        g = npaired[npaired["pivot"] == pv]
+        b_ = np.polyfit(g["x"], g["y"], 1)
+        agree_rows[f"rw_{pv}"] = {"scores": xmodel(noise[noise["pivot"] == pv], "prompt_id"),
+                                  "change": xmodel(g, "prompt_id", "d"), "sd_change": float(g["d"].std()),
+                                  "center": float(0.5 + b_[1])}
+    N["agreement"] = agree_rows
+    N["sd_change_translated"] = float(paired["d"].std())
+    N["sd_change_reworded"] = float(npaired["d"].std())
+    N["null_n100"] = float(npaired["d"].std() * np.sqrt(2 / (np.pi * 100)))
+    N["null_n360"] = float(npaired["d"].std() * np.sqrt(2 / (np.pi * N["cells_n_median"])))
+    rows = [r"\begin{table}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{3.5pt}",
+            r"\begin{tabular}{lcccc}", r"\toprule",
+            r" & \multicolumn{2}{c}{\textbf{Models agree}} & & \\", r"\cmidrule(lr){2-3}",
+            r"\textbf{Version} & score & change & \textbf{Spread} & \textbf{Center} \\", r"\midrule",
+            f"English & {agree_rows['en']['scores']:.2f} & -- & -- & -- \\\\", r"\midrule"]
+    for l in order:
+        r_ = agree_rows[l]
+        rows.append(f"{LANG_NAME[l]} & {r_['scores']:.2f} & {r_['change']:.2f} & {r_['sd_change']:.2f} & "
+                    f"{r_['center']:.3f} \\\\")
+    rows.append(r"\midrule")
+    for pv in ["de", "fi", "ja"]:
+        r_ = agree_rows[f"rw_{pv}"]
+        rows.append(f"Reworded via {PIVOT_NAME[pv].split()[-1]} & {r_['scores']:.2f} & {r_['change']:.2f} & "
+                    f"{r_['sd_change']:.2f} & {r_['center']:.3f} \\\\")
+    rows += [r"\bottomrule", r"\end{tabular}",
+             r"\caption{Are item-level scores outside English systematic or noise? \textbf{Models agree}: average "
+             r"correlation, over the 45 pairs of models, of their scores on the same items (\emph{score}) and of the "
+             r"change from English (\emph{change}). \textbf{Spread}: standard deviation of the item-level change. "
+             r"\textbf{Center}: fitted score of an item on which the model has no preference in English.}",
+             r"\label{tab:agreement}", r"\end{table}"]
+    (TABLES_DIR / "tab_agreement.tex").write_text("\n".join(rows) + "\n")
+
+    # ── English lean vs gap without sharing items (split halves) ──
+    en_items = a[a["language"] == "en"]
+    items_ = np.array(sorted(en_items["base_prompt_id"].unique()))
+    rs = []
+    for _ in range(500):
+        half = set(RNG.choice(items_, size=len(items_) // 2, replace=False))
+        e_ = en_items[en_items["base_prompt_id"].isin(half)].groupby("model")["stereotype_score"].mean()
+        q_ = paired[~paired["base_prompt_id"].isin(half)]
+        g_ = q_.groupby(["model", "language"])["d"].mean().abs().groupby(level="model").mean()
+        rs.append(np.corrcoef(e_.reindex(g_.index), g_)[0, 1])
+    N["lean_gap_r_splithalf"] = {"median": float(np.median(rs)), "p5": float(np.percentile(rs, 5)),
+                                 "p95": float(np.percentile(rs, 95))}
+    tgt_mean = a[a["language"] != "en"].groupby(["model", "language"])["stereotype_score"].mean()
+    N["sd_models_en"] = float(en_items.groupby("model")["stereotype_score"].mean().std())
+    N["sd_models_target"] = float(tgt_mean.groupby(level="model").mean().std())
+    N["range_models_target"] = [float(tgt_mean.groupby(level="model").mean().min()),
+                                float(tgt_mean.groupby(level="model").mean().max())]
+
+    # LLM-rewrite items actually used (after dropping unrecoverable BBQ items)
+    N["llm_items_used"] = int(len(set(npaired["prompt_id"]) & set(
+        pd.read_csv(re9.DATA_DIR / "human_paraphrases.csv")["prompt_id"])))
+
+    # ── Appendix table: gap for every model and language ──
+    rows = [r"\begin{table*}[t]", r"\centering", r"\small",
+            r"\begin{tabular}{l" + "c" * len(order) + "c}", r"\toprule",
+            r"\textbf{Model} & " + " & ".join(rf"\textbf{{{LANG_NAME[l]}}}" for l in order) +
+            r" & \textbf{Noise only} \\", r"\midrule"]
+    for m in sorted(cells["model"].unique(), key=lambda m: SHORT[m]):
+        c = cells[cells["model"] == m].set_index("language")
+        vals = []
+        for l in order:
+            v_ = f"{-c.loc[l, 'mean_d']:.3f}"
+            vals.append(rf"\textbf{{{v_}}}" if c.loc[l, "q_bh"] < 0.05 else v_)
+        rows.append(f"{SHORT[m]} & " + " & ".join(vals) + f" & {c['analytic_null'].mean():.3f} \\\\")
+    rows += [r"\bottomrule", r"\end{tabular}",
+             r"\caption{How far each language's average stereotype score falls below English, for every model "
+             r"(negative values: above English). Bold: the drop survives the permutation test with "
+             r"false-discovery correction. \textbf{Noise only}: the distance from zero expected if the "
+             r"item-level changes were pure noise, averaged over languages.}",
+             r"\label{tab:gap_matrix}", r"\end{table*}"]
+    (TABLES_DIR / "tab_gap_matrix.tex").write_text("\n".join(rows) + "\n")
+
     # ── Table: per language (the core numbers) ──
     v_sim = pd.Series({k: x["similarity"] for k, x in v.items()})
     lang_of = v_sim.index.str.rsplit("_", n=1).str[-1]
@@ -423,7 +513,7 @@ def main():
             r"\textbf{Gap $-$ floor [95\% CI]} & soft & binary & \textbf{CLFI} \\", r"\midrule"]
     for _, r in boot.sort_values("mean_dfg").iterrows():
         m = r["model"]
-        star = r"$^{\ast}$" if r["diff_lo"] > 0 else ""
+        star = r"$^{\ast}$" if r["diff_lo"] >= 0.0005 else ""
         rows.append(f"{SHORT[m]} & {gshort[grp[m]]} & {en_soft[m]:.3f} & {en_bin[m]:.2f} & {r['mean_dfg']:.3f} & "
                     f"{r['floor']:.3f} & ${r['diff']:+.3f}$ [${r['diff_lo']:+.3f}$, ${r['diff_hi']:+.3f}$]{star} & "
                     f"{sig[m]}/7 & {sig_bin[m]}/7 & {N['clfi'][m]:.3f} \\\\")

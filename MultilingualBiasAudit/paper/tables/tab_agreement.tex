@@ -1,0 +1,28 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Models agree}} & & \\
+\cmidrule(lr){2-3}
+\textbf{Version} & score & change & \textbf{Spread} & \textbf{Center} \\
+\midrule
+English & 0.50 & -- & -- & -- \\
+\midrule
+Spanish & 0.58 & 0.45 & 0.21 & 0.515 \\
+French & 0.55 & 0.45 & 0.20 & 0.506 \\
+Chinese & 0.51 & 0.38 & 0.22 & 0.503 \\
+Arabic & 0.53 & 0.41 & 0.20 & 0.510 \\
+Korean & 0.57 & 0.47 & 0.22 & 0.505 \\
+Swahili & 0.50 & 0.50 & 0.23 & 0.496 \\
+Hindi & 0.58 & 0.43 & 0.18 & 0.500 \\
+\midrule
+Reworded via German & 0.64 & 0.67 & 0.15 & 0.510 \\
+Reworded via Finnish & 0.63 & 0.62 & 0.20 & 0.517 \\
+Reworded via Japanese & 0.66 & 0.60 & 0.23 & 0.507 \\
+\bottomrule
+\end{tabular}
+\caption{Are item-level scores outside English systematic or noise? \textbf{Models agree}: average correlation, over the 45 pairs of models, of their scores on the same items (\emph{score}) and of the change from English (\emph{change}). \textbf{Spread}: standard deviation of the item-level change. \textbf{Center}: fitted score of an item on which the model has no preference in English.}
+\label{tab:agreement}
+\end{table}
