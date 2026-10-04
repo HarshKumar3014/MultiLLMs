@@ -19,7 +19,7 @@ fi
 
 # 1. Amharic: translate + validate (CPU, ~25 min, needs internet) if not done yet
 # non-fatal: a translation rate-limit must not block the re-scoring below
-if [[ ! -f data/validation_am.json ]]; then
+if [[ -z "${SKIP_AM:-}" && ! -f data/validation_am.json ]]; then  # SKIP_AM=1 to skip
   python 11_add_language.py --lang am --build || echo "⚠ Amharic build failed — skipping Amharic; re-run later"
 fi
 AM=0

@@ -1,22 +1,22 @@
 \begin{table*}[t]
 \centering
 \small
-\caption{Stereotype Score (SS) by Model and Language. The value closest to ideal neutrality (0.500) in each language is highlighted. Values $<0.480$ indicate strong anti-stereotype bias (highlighted green).}
+\caption{Mean soft SS by model and language (Layer~A only, collapsed minimal pairs removed). Bracketed: binary-preference SS (StereoSet definition).}
 \label{tab:ss_matrix}
 \begin{tabular}{lcccccccc}
 \toprule
-\textbf{Model} & \textbf{Eng} & \textbf{Spa} & \textbf{Fre} & \textbf{Kor} & \textbf{Chi} & \textbf{Ara} & \textbf{Hin} & \textbf{Swa} \\
+\textbf{Model} & \textbf{En} & \textbf{Fr} & \textbf{Es} & \textbf{Zh} & \textbf{Ko} & \textbf{Ar} & \textbf{Hi} & \textbf{Sw} \\
 \midrule
-  aya-23-8b & 0.495 & 0.503 & \textbf{0.500} & 0.485 & \textbf{0.495} & 0.491 & 0.493 & 0.504 \\
-  aya-expanse-8b & 0.495 & \textbf{0.498} & 0.493 & 0.484 & \cellcolor{green!15}0.469 & 0.491 & \textbf{0.500} & 0.504 \\
-  bloomz-7b & 0.494 & 0.505 & 0.505 & 0.509 & 0.512 & \textbf{0.504} & 0.517 & 0.488 \\
-  gemma2-9b & \textbf{0.498} & 0.489 & 0.498 & 0.498 & \cellcolor{green!15}0.476 & 0.484 & 0.498 & 0.491 \\
-  llama3.1-8b & 0.497 & 0.488 & 0.494 & 0.497 & 0.492 & 0.485 & 0.496 & 0.502 \\
-  mistral-7b & 0.497 & 0.489 & 0.488 & 0.502 & 0.485 & 0.489 & 0.489 & \textbf{0.500} \\
-  olmo2-7b & \cellcolor{green!15}0.479 & 0.485 & 0.481 & 0.503 & 0.483 & \cellcolor{green!15}0.477 & 0.499 & 0.498 \\
-  qwen2.5-7b & 0.485 & 0.488 & 0.493 & 0.494 & \cellcolor{green!15}0.476 & 0.483 & 0.490 & 0.502 \\
-  solar-10.7b & 0.492 & 0.492 & 0.484 & 0.497 & 0.485 & 0.491 & 0.493 & 0.498 \\
-  yi-1.5-9b & 0.494 & 0.490 & 0.482 & \textbf{0.501} & 0.481 & 0.496 & 0.498 & 0.501 \\
+Aya-23-8B & 0.511 [0.55] & 0.509 [0.53] & 0.492 [0.51] & 0.510 [0.51] & 0.493 [0.48] & 0.494 [0.54] & 0.510 [0.56] & 0.488 [0.45] \\
+Aya-Expanse-8B & 0.527 [0.59] & 0.523 [0.58] & 0.517 [0.53] & 0.506 [0.53] & 0.507 [0.53] & 0.523 [0.58] & 0.508 [0.56] & 0.488 [0.48] \\
+BLOOMZ-7B & 0.535 [0.65] & 0.517 [0.57] & 0.514 [0.55] & 0.520 [0.55] & 0.511 [0.52] & 0.522 [0.55] & 0.496 [0.47] & 0.528 [0.55] \\
+Gemma-2-9B & 0.538 [0.63] & 0.523 [0.55] & 0.517 [0.56] & 0.528 [0.56] & 0.507 [0.53] & 0.523 [0.57] & 0.512 [0.54] & 0.515 [0.56] \\
+Llama-3.1-8B & 0.530 [0.63] & 0.523 [0.57] & 0.516 [0.55] & 0.514 [0.54] & 0.508 [0.56] & 0.515 [0.57] & 0.507 [0.55] & 0.497 [0.49] \\
+Mistral-7B & 0.534 [0.64] & 0.520 [0.57] & 0.524 [0.58] & 0.512 [0.55] & 0.500 [0.54] & 0.508 [0.54] & 0.504 [0.52] & 0.486 [0.45] \\
+OLMo-2-7B & 0.547 [0.62] & 0.526 [0.59] & 0.517 [0.57] & 0.505 [0.53] & 0.505 [0.52] & 0.517 [0.55] & 0.501 [0.52] & 0.477 [0.47] \\
+Qwen-2.5-7B & 0.546 [0.63] & 0.522 [0.57] & 0.523 [0.56] & 0.536 [0.57] & 0.512 [0.57] & 0.525 [0.57] & 0.507 [0.55] & 0.486 [0.48] \\
+SOLAR-10.7B & 0.536 [0.60] & 0.517 [0.54] & 0.520 [0.57] & 0.509 [0.53] & 0.501 [0.51] & 0.511 [0.53] & 0.508 [0.55] & 0.489 [0.48] \\
+Yi-1.5-9B & 0.533 [0.61] & 0.518 [0.58] & 0.525 [0.57] & 0.527 [0.54] & 0.504 [0.52] & 0.508 [0.53] & 0.501 [0.51] & 0.486 [0.48] \\
 \bottomrule
 \end{tabular}
 \end{table*}
