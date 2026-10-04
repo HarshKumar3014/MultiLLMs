@@ -596,7 +596,8 @@ def main():
              r"\caption{Main results with the per-token average log-probability (avg.) and with the summed "
              r"log-probability (sum), which does not dilute a one-word contrast in a long continuation. "
              r"\textbf{Reliable}: models (of 10; last row: pairs of 70) with a drop that survives the corrected "
-             r"permutation test. Summed scores are more extreme, so drops are larger; every conclusion holds.}",
+             r"permutation test. Summed scores are more extreme, so drops are larger; the drop and the overall "
+             r"carry-over hold, while carry-over by language shifts (Swahili falls, Arabic and Hindi rise).}",
              r"\label{tab:summed}", r"\end{table}"]
     (TABLES_DIR / "tab_summed.tex").write_text("\n".join(rows) + "\n")
     N["robustness"] = rb

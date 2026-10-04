@@ -1,18 +1,20 @@
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \small
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lccccc}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccccccc}
 \toprule
- & & & \multicolumn{2}{c}{\textbf{Carry-over}} & \\
-\cmidrule(lr){4-5}
-\textbf{Source} & \textbf{Items} & \textbf{Drop} & transl. & rew. & \textbf{Same choice} \\
+ & & \multicolumn{2}{c}{\textbf{Reliable drops}} & \textbf{Mixed-model drop} & \multicolumn{2}{c}{\textbf{Carry-over}} & \multicolumn{2}{c}{\textbf{Same choice}} \\
+\cmidrule(lr){3-4}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+\textbf{Items} & $n$ & soft & binary & [95\% CI] & transl. & rew. & transl. & rew. \\
 \midrule
-StereoSet & 200 & 0.027 & 0.15 & 0.49 & 56\% / 67\% \\
-BBQ & 125 & 0.011 & 0.32 & 0.72 & 61\% / 72\% \\
-Written & 37 & 0.022 & 0.24 & 0.69 & 63\% / 82\% \\
+StereoSet & 200 & 41/70 & 18/70 & 0.027 [$0.015$, $0.039$] & 0.15 & 0.49 & 56\% & 67\% \\
+BBQ & 125 & 0/70 & 0/70 & 0.011 [$-0.013$, $0.036$] & 0.32 & 0.72 & 61\% & 72\% \\
+Written & 37 & 0/70 & 0/70 & 0.026 [$-0.020$, $0.072$] & 0.24 & 0.69 & 63\% & 82\% \\
+\midrule
+BBQ + Written & 162 & 0/70 & 1/70 & 0.015 [$-0.006$, $0.036$] & 0.30 & 0.71 & 61\% & 74\% \\
 \bottomrule
 \end{tabular}
-\caption{Results by source of the items. \textbf{Drop}: mean over languages of the drop below English. \textbf{Carry-over}: slope for translations and for English rewordings. \textbf{Same choice}: translated / reworded. Carry-over is far below the rewording level for every source.}
+\caption{Results by source of the items. \textbf{Reliable drops}: model--language pairs (of 70) whose drop survives the permutation test with false-discovery correction within that source. \textbf{Mixed-model drop}: average drop below English with crossed random effects for item and model. \textbf{Carry-over} and \textbf{Same choice}: for translations and for English rewordings. The last row excludes StereoSet entirely.}
 \label{tab:sources}
-\end{table}
+\end{table*}

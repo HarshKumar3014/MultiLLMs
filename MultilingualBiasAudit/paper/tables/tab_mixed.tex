@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Language} & \textbf{Drop} & \textbf{Beyond rewording} & $q$ \\
+\midrule
+Spanish & .007 & .006 [$-$.001, .013] & .088 \\
+French & .017 & .016 [.009, .023] & $<$.001 \\
+Chinese & .019 & .018 [.011, .025] & $<$.001 \\
+Arabic & .019 & .018 [.011, .025] & $<$.001 \\
+Korean & .026 & .024 [.017, .031] & $<$.001 \\
+Swahili & .030 & .028 [.021, .036] & $<$.001 \\
+Hindi & .030 & .029 [.022, .036] & $<$.001 \\
+\midrule
+Reworded & \multicolumn{3}{l}{De .000, Fi $-$.006, Ja .010} \\
+\bottomrule
+\end{tabular}
+\caption{Mixed model of the item-level change from English, $d \sim 0 + \text{condition} + (1 \mid \text{item}) + (1 \mid \text{model})$, where the condition is one of the seven translations or the three English rewordings. \textbf{Drop}: estimated drop below English. \textbf{Beyond rewording}: the language's drop minus the average drop under rewording, with 95\% Wald interval; $q$: false-discovery corrected.}
+\label{tab:mixed}
+\end{table}

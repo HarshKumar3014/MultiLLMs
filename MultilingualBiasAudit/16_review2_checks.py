@@ -202,9 +202,10 @@ def main():
         f_ = f"{r['agree_len_freq']:.2f}" if "agree_len_freq" in r else "--"
         r2 = r.get("r2_len_freq", r["r2_len"])
         t.append(f"{NAME[l]} & {r['agree_raw']:.2f} & {r['agree_len']:.2f} & {f_} & {r2:.3f} \\\\")
-    t += [r"\midrule", f"\\multicolumn{{5}}{{l}}{{Equal length: drop {N['length_matched']['drop']:.3f} "
-          f"(all {N['length_matched']['drop_all']:.3f}), slope {N['length_matched']['slope']:.2f} "
-          f"(all {N['length_matched']['slope_all']:.2f})}} \\\\",
+    t += [r"\midrule", f"\\multicolumn{{5}}{{l}}{{Equal length ($n$={N['length_matched']['pairs']:,}): drop {N['length_matched']['drop']:.3f}, "
+          f"slope {N['length_matched']['slope']:.2f}}} \\\\",
+          f"\\multicolumn{{5}}{{l}}{{All pairs: drop {N['length_matched']['drop_all']:.3f}, "
+          f"slope {N['length_matched']['slope_all']:.2f}}} \\\\",
           r"\bottomrule", r"\end{tabular}",
           r"\caption{Do surface properties drive the shared item-level changes? Average correlation between "
           r"models of the change from English, before and after regressing out differences in token count "
