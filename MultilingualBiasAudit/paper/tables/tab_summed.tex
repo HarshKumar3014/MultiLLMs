@@ -1,0 +1,24 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccccc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Drop}} & \multicolumn{2}{c}{\textbf{Reliable}} & \multicolumn{2}{c}{\textbf{Slope}} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+\textbf{Language} & avg. & sum & avg. & sum & avg. & sum \\
+\midrule
+Spanish & 0.007 & 0.037 & 0 & 2 & 0.37 & 0.38 \\
+French & 0.017 & 0.038 & 1 & 1 & 0.38 & 0.36 \\
+Chinese & 0.019 & 0.065 & 3 & 4 & 0.36 & 0.32 \\
+Arabic & 0.020 & 0.057 & 5 & 5 & 0.18 & 0.24 \\
+Korean & 0.026 & 0.057 & 5 & 5 & 0.14 & 0.16 \\
+Swahili & 0.029 & 0.099 & 6 & 9 & 0.26 & 0.11 \\
+Hindi & 0.030 & 0.069 & 8 & 6 & 0.15 & 0.21 \\
+\midrule
+All & 0.021 & -- & 28 & 32 & 0.26 & 0.25 \\
+\bottomrule
+\end{tabular}
+\caption{Main results with the per-token average log-probability (avg.) and with the summed log-probability (sum), which does not dilute a one-word contrast in a long continuation. \textbf{Reliable}: models (of 10; last row: pairs of 70) with a drop that survives the corrected permutation test. Summed scores are more extreme, so drops are larger; every conclusion holds.}
+\label{tab:summed}
+\end{table}

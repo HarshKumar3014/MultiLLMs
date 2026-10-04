@@ -1,16 +1,16 @@
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lcccc}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccccccccc}
 \toprule
-\textbf{Items kept} & \textbf{Pairs} & \textbf{Drop} & \textbf{Below En.} & \textbf{Slope} \\
+\textbf{Items kept} & \textbf{Pairs} & \textbf{Spanish} & \textbf{French} & \textbf{Chinese} & \textbf{Arabic} & \textbf{Korean} & \textbf{Swahili} & \textbf{Hindi} & \textbf{Equal wt.} & \textbf{Slope} \\
 \midrule
-All & 24,970 & 0.021 & 70/70 & 0.26 \\
-Faithful translation & 15,950 & 0.016 & 61/70 & 0.29 \\
-\quad + equal fluency & 6,995 & 0.009 & 54/70 & 0.40 \\
+All & 24,970 & 0.007 & 0.017 & 0.019 & 0.020 & 0.025 & 0.029 & 0.030 & 0.021 & 0.26 \\
+Faithful translation & 15,950 & 0.003 & 0.010 & 0.012 & 0.016 & 0.026 & 0.022 & 0.031 & 0.017 & 0.29 \\
+\quad + equal fluency (no BBQ) & 3,425 & 0.013 & 0.009 & 0.009 & 0.039 & 0.019 & 0.017 & 0.014 & 0.017 & 0.25 \\
 \bottomrule
 \end{tabular}
-\caption{Restricting to translations whose back-translation stays close to the original (similarity $\ge 0.9$), and further to items on which the model is about as fluent as in English (fluency within 0.1), halves the drop and raises carry-over, but most model--language pairs still score below English. \textbf{Below En.}: model--language pairs with a negative mean change.}
+\caption{Drop below English per language when only some translated items are kept. \textbf{Faithful}: back-translation similarity $\ge 0.9$. \textbf{Equal fluency}: additionally, the model separates the two candidate continuations from the unrelated one about as well as in English (within 0.1); BBQ items are excluded here because their third option is an ``unknown'' answer rather than an unrelated sentence. \textbf{Equal wt.}: mean over languages, so that filtering cannot change the result by changing the language mix. \textbf{Slope}: carry-over.}
 \label{tab:controls}
-\end{table}
+\end{table*}
