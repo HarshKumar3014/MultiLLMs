@@ -48,6 +48,8 @@ EOF
 done
 
 # 4. Analysis (CPU)
-python 10_positive_control.py --analyze-only
-python 09_reanalysis.py
+# 09 first: it writes results/reanalysis/floor_tests.csv, which 10 needs.
+# Non-fatal so a partial (one-model) run still exits cleanly.
+python 09_reanalysis.py || echo "⚠ 09_reanalysis failed (fine for a partial run)"
+python 10_positive_control.py --analyze-only || echo "⚠ positive-control analysis failed (fine for a partial run)"
 echo "done → results/reanalysis/summary.json, results/positive_control/positive_control_tests.csv"
