@@ -221,29 +221,38 @@ def main():
     # ══════════════════════════════════════════════════════════════════════
     order = by_lang.sort_values("mean_d", ascending=False)["language"].tolist()   # smallest gap first
 
-    # Fig 1 — the gap per language, against the paraphrase floor
-    fig, ax = plt.subplots(figsize=(COL_W, 2.35))
+    # Fig 1 — the gap per language: one row per language, one dot per model
+    #          (filled = drop survives the permutation test with FDR, hollow = not)
+    fig, ax = plt.subplots(figsize=(COL_W, 2.55))
     fl = float(np.median(floors.groupby("model")["floor"].mean()))
-    ax.axhspan(-fl, fl, color=BAND, zorder=0, lw=0)
-    ax.axhline(0, color=MUTED, lw=0.6, zorder=1)
-    ax.text(len(order) - 0.45, fl + 0.0012, "rewording English\n(noise floor)", ha="right", va="bottom",
-            fontsize=6.8, color=INK2, linespacing=0.95)
+    ax.axvspan(-fl, fl, color=BAND, zorder=0, lw=0)
+    ax.axvline(0, color=MUTED, lw=0.7, zorder=1)
+    bl = by_lang.set_index("language")
     for i, l in enumerate(order):
+        r = bl.loc[l]
+        ax.barh(i, r["mean_d"], height=0.62, color="#cde2fb", lw=0, zorder=1)
+        ax.hlines(i, r["lo"], r["hi"], color=BLUE_D, lw=1.6, zorder=3)
+        ax.vlines(r["mean_d"], i - 0.31, i + 0.31, color=BLUE_D, lw=1.6, zorder=3)
         c = cells[cells["language"] == l]
-        jit = (RNG.random(len(c)) - .5) * 0.32
-        ax.scatter(i + jit, c["mean_d"], s=9, color=MUTED, alpha=.7, lw=0, zorder=2)
-        r = by_lang.set_index("language").loc[l]
-        ax.errorbar(i, r["mean_d"], yerr=[[r["mean_d"] - r["lo"]], [r["hi"] - r["mean_d"]]], fmt="o",
-                    color=BLUE, ms=5.5, mec="white", mew=0.8, elinewidth=1.6, capsize=0, zorder=3)
-        ax.text(i, -0.064, f"{int(r['n_sig'])}/10", ha="center", va="top", fontsize=6.8, color=INK2)
-    ax.text(-0.75, -0.064, "sig.", ha="right", va="top", fontsize=6.8, color=INK2)
-    ax.set_xticks(range(len(order)), [LANG_NAME[l] for l in order], rotation=30, ha="right",
-                  rotation_mode="anchor")
-    ax.tick_params(axis="x", length=0, pad=2)
-    ax.set_xlim(-0.6, len(order) - 0.4)
-    ax.set_ylim(-0.074, 0.016)
-    ax.set_ylabel("Change in stereotype score\nvs. English")
-    ax.yaxis.grid(True, color=GRID, lw=0.5); ax.set_axisbelow(True)
+        yj = i + (RNG.random(len(c)) - .5) * 0.42
+        sig_ = c["q_bh"].to_numpy() < .05
+        ax.scatter(c["mean_d"][sig_], yj[sig_], s=13, color=BLUE, lw=0.5, ec="white", zorder=4)
+        ax.scatter(c["mean_d"][~sig_], yj[~sig_], s=13, facecolor="white", ec=MUTED, lw=0.8, zorder=4)
+        ax.text(0.0135, i, f"{int(r['n_sig'])}/10", va="center", ha="left", fontsize=7, color=INK)
+    ax.text(0.0135, -0.85, "reliable", va="center", ha="left", fontsize=6.8, color=INK2)
+    ax.text(0, -0.85, "noise floor", ha="center", va="center", fontsize=6.5, color=INK2)
+    ax.set_yticks(range(len(order)), [LANG_NAME[l] for l in order])
+    ax.tick_params(axis="y", length=0)
+    ax.set_ylim(len(order) - 0.45, -1.25)
+    ax.set_xlim(-0.062, 0.013)
+    ax.set_xticks([-0.06, -0.04, -0.02, 0])
+    ax.set_xlabel("Change in stereotype score vs. English")
+    ax.xaxis.grid(True, color=GRID, lw=0.5); ax.set_axisbelow(True)
+    h1 = ax.scatter([], [], s=13, color=BLUE, ec="white", lw=0.5, label="model, reliable drop")
+    h2 = ax.scatter([], [], s=13, facecolor="white", ec=MUTED, lw=0.8, label="model, not reliable")
+    h3 = matplotlib.patches.Patch(color="#cde2fb", label="average of 10 models")
+    ax.legend(handles=[h3, h1, h2], loc="upper center", bbox_to_anchor=(0.42, -0.2), ncol=3, frameon=False,
+              fontsize=6.5, handletextpad=0.25, columnspacing=0.8, borderaxespad=0)
     save(fig, "fig_gap_by_language")
 
     # Fig 2 — same probe reworded vs translated (the central picture)
@@ -269,26 +278,40 @@ def main():
     fig.subplots_adjust(wspace=0.12)
     save(fig, "fig_transfer_scatter")
 
-    # Fig 3 — how much of the English preference survives, by language
-    fig, ax = plt.subplots(figsize=(COL_W, 2.2))
-    sl_lang = pd.Series(N["slope_by_lang"]).reindex(order)
-    yl = np.arange(len(order))
+    # Fig 3 — carry-over vs. gap: weaker carry-over goes with a bigger drop
+    fig, ax = plt.subplots(figsize=(COL_W, 2.55))
+    cm = cells.set_index(["model", "language"])["mean_d"]
+    pm = npaired.groupby(["model", "pivot"])["d"].mean()
+    psl = npaired.groupby(["model", "pivot"]).apply(lambda g: slope(g["x"], g["y"]), include_groups=False)
+    ax.axhline(0, color=MUTED, lw=0.7, zorder=1)
+    ax.scatter(sl_model.values, cm.reindex(sl_model.index).values, s=9, color=MUTED, alpha=.55, lw=0, zorder=2)
+    ax.scatter(psl.values, pm.reindex(psl.index).values, s=11, facecolor="white", ec=MUTED, lw=0.7, zorder=2)
+    N["corr_carryover_gap_cells"] = float(np.corrcoef(sl_model.values, cm.reindex(sl_model.index).values)[0, 1])
+    pmean = npaired.groupby("pivot")["d"].mean()
     for p, val in N["slope_by_pivot"].items():
-        ax.axvline(val, color=MUTED, lw=0.7, ls=(0, (2, 2)), zorder=1)
-    pv_lo, pv_hi = min(N["slope_by_pivot"].values()), max(N["slope_by_pivot"].values())
-    ax.axvspan(pv_lo, pv_hi, color=BAND, zorder=0, lw=0)
-    ax.text(pv_lo - 0.02, -0.55, "rewordings of English", ha="right", va="center", fontsize=6.8, color=INK2)
-    for i, l in enumerate(order):
-        sm = sl_model.xs(l, level="language")
-        ax.scatter(sm, np.full(len(sm), i) + (RNG.random(len(sm)) - .5) * .3, s=8, color=MUTED, alpha=.7, lw=0)
-        ax.plot(sl_lang[l], i, "o", color=BLUE, ms=5.5, mec="white", mew=0.8, zorder=3)
-    ax.set_yticks(yl, [LANG_NAME[l] for l in order]); ax.invert_yaxis()
-    ax.set_xlim(-0.12, 1.0)
-    ax.set_ylim(len(order) - 0.4, -0.8)
+        ax.scatter(val, pmean[p], s=34, marker="D", color=INK2, ec="white", lw=0.6, zorder=4)
+    px = np.mean(list(N["slope_by_pivot"].values()))
+    ax.text(px, 0.0105, "English reworded", ha="center", va="bottom", fontsize=6.8, color=INK2)
+    offs = {"es": (6, 3), "fr": (7, 4), "zh-CN": (7, -7), "ar": (6, 0), "ko": (-6, 3), "sw": (6, -3),
+            "hi": (-6, -4)}
+    for l in order:
+        x_, y_ = N["slope_by_lang"][l], bl.loc[l, "mean_d"]
+        ax.scatter(x_, y_, s=40, color=BLUE, ec="white", lw=0.7, zorder=5)
+        dx, dy = offs.get(l, (5, 0))
+        ax.annotate(LANG_NAME[l], (x_, y_), xytext=(dx, dy), textcoords="offset points", fontsize=7,
+                    ha="left" if dx > 0 else "right", va="center", color=INK, zorder=6)
+    ax.text(0.98, 0.04, f"r = {N['corr_carryover_gap_cells']:.2f} across\n70 model–language pairs",
+            transform=ax.transAxes, ha="right", va="bottom", fontsize=6.6, color=INK2, linespacing=0.95)
+    hs = [ax.scatter([], [], s=40, color=BLUE, ec="white", lw=0.7, label="language (all models)"),
+          ax.scatter([], [], s=9, color=MUTED, alpha=.55, lw=0, label="one model, one language"),
+          ax.scatter([], [], s=11, facecolor="white", ec=MUTED, lw=0.7, label="one model, English reworded")]
+    ax.legend(handles=hs, loc="upper left", frameon=False, fontsize=6.3, handletextpad=0.2, borderaxespad=0.2,
+              labelspacing=0.3)
     ax.set_xlabel("Carry-over of English preference (slope)")
-    ax.xaxis.grid(True, color=GRID, lw=0.5); ax.set_axisbelow(True)
-    ax.tick_params(axis="y", length=0)
-    save(fig, "fig_transfer_by_language")
+    ax.set_ylabel("Change in stereotype score\nvs. English")
+    ax.set_xlim(-0.1, 0.95); ax.set_ylim(-0.066, 0.024)
+    ax.grid(True, color=GRID, lw=0.5); ax.set_axisbelow(True)
+    save(fig, "fig_carryover_vs_gap")
 
     # Fig 4 — can the test see a real shift? (spike-in power curve)
     fig, ax = plt.subplots(figsize=(COL_W, 2.0))
@@ -324,19 +347,20 @@ def main():
     ss = pd.read_csv(OUT / "ss_matrix_clean.csv").pivot(index="model", columns="language", values="soft")
     ss = ss[["en"] + order].rename(columns=LANG_NAME).rename(index=SHORT)
     ss = ss.loc[ss["English"].sort_values(ascending=False).index]
-    fig, ax = plt.subplots(figsize=(COL_W, 2.7))
+    fig, ax = plt.subplots(figsize=(FULL_W * 0.86, 2.5))
     span = float(np.abs(ss.values - .5).max())
     cmap = matplotlib.colors.LinearSegmentedColormap.from_list("div", [BLUE_D, "#86b6ef", "#f0efec", "#f19a95", RED])
     im = ax.imshow(ss.values, cmap=cmap, vmin=.5 - span, vmax=.5 + span, aspect="auto")
     for i in range(ss.shape[0]):
         for j in range(ss.shape[1]):
-            ax.text(j, i, f"{ss.values[i, j]:.3f}"[1:], ha="center", va="center", fontsize=5.8, color=INK)
-    ax.set_xticks(range(ss.shape[1]), ss.columns, rotation=40, ha="right")
+            ax.text(j, i, f"{ss.values[i, j]:.3f}"[1:], ha="center", va="center", fontsize=7.2, color=INK)
+    ax.set_xticks(range(ss.shape[1]), ss.columns)
+    ax.xaxis.tick_top()
     ax.set_yticks(range(ss.shape[0]), ss.index)
     ax.tick_params(length=0)
     for s_ in ax.spines.values():
         s_.set_visible(False)
-    cb = fig.colorbar(im, ax=ax, fraction=0.045, pad=0.02)
+    cb = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.015)
     cb.ax.tick_params(labelsize=6.5); cb.outline.set_visible(False)
     cb.set_label("stereotype score (0.5 = no preference)", fontsize=6.8)
     save(fig, "fig_score_heatmap")
@@ -363,6 +387,7 @@ def main():
               r"false-discovery correction. \textbf{Carry-over}: slope of translated on English scores (1 = full).}",
               r"\label{tab:models}", r"\end{table}"]
     (TABLES_DIR / "tab_models.tex").write_text("\n".join(lines) + "\n")
+    json.dump(N, open(OUT / "paper_numbers.json", "w"), indent=1, default=float)  # incl. figure-time numbers
 
     print(json.dumps({k: N[k] for k in ["slope_cross", "slope_para", "slope_by_lang", "slope_by_pivot",
                                          "agree_by_lang", "agree_by_pivot", "shrink_predicted_d", "observed_mean_d",

@@ -495,5 +495,6 @@
    "dfg": 0.03207548325451547
   }
  },
- "rank_spearman_binary_vs_soft": 0.7939393939393938
+ "rank_spearman_binary_vs_soft": 0.7939393939393938,
+ "corr_carryover_gap_cells": 0.46275771890336087
 }
