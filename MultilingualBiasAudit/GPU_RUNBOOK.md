@@ -32,7 +32,7 @@ disconnects will force repeated model downloads, though every step resumes.
 ## Vast.ai (A100 40/80 GB, PyTorch image, ≥ 80 GB disk)
 
 ```bash
-git clone https://github.com/HarshKumar3014/MultiLLMs && cd MultiLLMs/MultilingualBiasAudit
+git clone <repo-url> && cd MultiLLMs/MultilingualBiasAudit
 # simplest: push the revision branch and `git checkout` it here. Otherwise copy
 # every changed file: config.py, 02_run_audit.py, 05_noise_floor.py, 09–12,
 # label_fix.py, run_gpu_extensions.sh, data/label_fix.json,
@@ -49,7 +49,7 @@ whole `results/v2/` folder, then locally run `python 09_reanalysis.py`.
 ## Colab (T4)
 
 ```python
-!git clone https://github.com/HarshKumar3014/MultiLLMs
+!git clone <repo-url>
 %cd MultiLLMs/MultilingualBiasAudit
 # upload the same extra files as above (Files pane), then:
 !pip -q install -r requirements.txt

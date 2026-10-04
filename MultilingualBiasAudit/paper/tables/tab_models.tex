@@ -1,0 +1,23 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{Gap} & \textbf{Floor} & \textbf{Sig.} & \textbf{Carry-over} \\
+\midrule
+Aya-23-8B & 0.010 & 0.006 & 0/7 & 0.34 \\
+Aya-Expanse-8B & 0.010 & 0.008 & 0/7 & 0.36 \\
+Gemma-2-9B & 0.015 & 0.007 & 1/7 & 0.36 \\
+Llama-3.1-8B & 0.017 & 0.008 & 2/7 & 0.33 \\
+Yi-1.5-9B & 0.019$^{\ast}$ & 0.001 & 4/7 & 0.14 \\
+BLOOMZ-7B & 0.020 & 0.008 & 1/7 & 0.29 \\
+SOLAR-10.7B & 0.023 & 0.008 & 5/7 & 0.20 \\
+Mistral-7B & 0.027$^{\ast}$ & 0.007 & 5/7 & 0.22 \\
+Qwen-2.5-7B & 0.034$^{\ast}$ & 0.013 & 5/7 & 0.25 \\
+OLMo-2-7B & 0.034$^{\ast}$ & 0.004 & 5/7 & 0.21 \\
+\bottomrule
+\end{tabular}
+\caption{Per model. \textbf{Gap}: average distance between a language's mean stereotype score and English's (DFG, averaged over the seven languages). \textbf{Floor}: the same distance between English and reworded English. $^{\ast}$: gap exceeds the model's own floor (95\% bootstrap interval of the difference above zero). \textbf{Sig.}: languages whose shift survives a permutation test with false-discovery correction. \textbf{Carry-over}: slope of translated on English scores (1 = full).}
+\label{tab:models}
+\end{table}

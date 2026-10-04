@@ -1,0 +1,22 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{DFG $=|\overline{d}|$ by model and language (Layer~A, paired, collapsed pairs removed). $^{\dagger}$: sign-flip permutation $q<0.05$ after BH-FDR over all 70 cells. Last column: analytic null $\mathbb{E}|\overline{d}|$ under $H_0$, averaged over languages.}
+\label{tab:dfg_full}
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Model} & \textbf{Fr} & \textbf{Es} & \textbf{Zh} & \textbf{Ko} & \textbf{Ar} & \textbf{Hi} & \textbf{Sw} & \textbf{Null} \\
+\midrule
+Aya-23-8B & .013 & .004 & .010 & .010 & .009 & .012 & .011 & .007 \\
+Aya-Expanse-8B & .009 & .002 & .011 & .002 & .005 & .015 & .028 & .010 \\
+BLOOMZ-7B & .019 & .021 & .021 & .024 & .010 & .038$^{\dagger}$ & .005 & .010 \\
+Gemma-2-9B & .017 & .004 & .014 & .022 & .010 & .024$^{\dagger}$ & .012 & .009 \\
+Llama-3.1-8B & .014 & .008 & .017 & .019 & .017 & .024$^{\dagger}$ & .023$^{\dagger}$ & .008 \\
+Mistral-7B & .016 & .004 & .027$^{\dagger}$ & .038$^{\dagger}$ & .032$^{\dagger}$ & .035$^{\dagger}$ & .038$^{\dagger}$ & .007 \\
+OLMo-2-7B & .020 & .008 & .042$^{\dagger}$ & .039$^{\dagger}$ & .030$^{\dagger}$ & .047$^{\dagger}$ & .053$^{\dagger}$ & .010 \\
+Qwen-2.5-7B & .031$^{\dagger}$ & .012 & .020 & .038$^{\dagger}$ & .032$^{\dagger}$ & .045$^{\dagger}$ & .057$^{\dagger}$ & .010 \\
+SOLAR-10.7B & .016 & .002 & .027$^{\dagger}$ & .034$^{\dagger}$ & .026$^{\dagger}$ & .028$^{\dagger}$ & .030$^{\dagger}$ & .009 \\
+Yi-1.5-9B & .011 & .003 & .004 & .029$^{\dagger}$ & .024$^{\dagger}$ & .031$^{\dagger}$ & .032$^{\dagger}$ & .009 \\
+\bottomrule
+\end{tabular}
+\end{table*}

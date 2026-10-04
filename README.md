@@ -6,38 +6,40 @@ that is the paper's central result.
 
 ## TL;DR of the finding
 
-We introduce two metrics — the **Deployment Fairness Gap (DFG)** and the
-**Cross-Lingual Fairness Index (CLFI)** — and use them to rank ten models.
-The ranking looks clean. It does not survive validation.
+Cross-language bias audits usually compare a model's average stereotype score
+in English with its average in another language. We ask how much of that gap
+is noise, using a **noise floor** (the gap produced by merely rewording
+English), paired permutation tests with false-discovery correction, and an
+injected-shift check that the test can detect real effects.
 
 | Quantity | Value |
 |---|---|
-| Observed cross-lingual DFG (10 models) | 0.004 – 0.013 |
-| Within-language noise floor (same aggregation) | median **0.0076**, range 0.0029 – 0.0210 |
-| Minimum detectable DFG at 80% power, current design | **0.034** |
-| Probes/language needed to resolve DFG = 0.010 | **≈4,500** (we used 390) |
+| Model–language pairs scoring below English | **70 / 70** |
+| …of which reliable after FDR correction (soft / binary score) | 28 / 39 |
+| Average gap per model vs. rewording-English floor | 0.010–0.034 vs. 0.001–0.013 |
+| Carry-over of item-level preference (slope): reworded / translated | **0.66 / 0.26** |
+| Smallest shift detected in ≥75% of runs (≈360 items/language) | ≈0.04 |
 
-The cross-lingual "signal" is the same size as the gap produced by
-paraphrasing **English into English**. A power analysis agrees from an
-independent direction: the design is 2.6–8.5× underpowered for the effects
-it reports. We publish this as a negative result for our own rankings and a
-generalizable one for the field.
+The gaps are real for Hindi, Swahili, Korean and Arabic, but they do **not**
+mean the models are fairer there: item-level preferences stay as strong but
+barely carry over from English, so averages drift toward "no preference."
 
-> **Note on a corrected metric.** An earlier version of `05_noise_floor.py`
-> computed the floor as the mean over probes of `|SS_para − SS_orig|`, while
-> the reported DFG is a difference of probe-set means. These are not
-> comparable — absolute-value-before-averaging prevents signed per-probe
-> noise from cancelling — and the old figure was ~10× inflated. The floor is
-> now computed at matching aggregation. Per-probe instability is still
-> reported, under its own name, as support for the power analysis.
+> **Pipeline errors fixed in this version** (see `label_fix.py` and
+> `02_run_audit.continuation_span`): StereoSet's Hugging Face `gold_label` 0 is
+> *anti*-stereotype; BBQ stereotype roles must come from metadata and question
+> polarity, not answer order; and tokenizing `context + " "` separately skipped
+> the first continuation token for 9/10 tokenizers. Scores in `results/v2/` use
+> the fixed scorer; files directly in `results/` are the old (invalid) v1 run,
+> kept for the record. The paper's figures and numbers come from
+> `09_reanalysis.py` and `13_paper_figures.py`.
 
 ## Pipeline
 
-Scripts run in numeric order. Only `02` needs a GPU.
+Scripts run in numeric order. `02`, `05`, `10`–`12` need a GPU (see `MultilingualBiasAudit/GPU_RUNBOOK.md`).
 
 | Script | Does | GPU |
 |---|---|:--:|
-| `01_build_prompts.py` | Builds the probe set: StereoSet / CrowS-Pairs / BBQ + 40 handcrafted templates (Layer A, translated to 7 languages) and 21 culturally-native probes (Layer B). Back-translation validated. | – |
+| `01_build_prompts.py` | Builds the item set: StereoSet / BBQ + 37 handcrafted templates (translated to 7 languages; the CrowS-Pairs loader yields no items) and 21 items written in the target languages. Back-translation check on contexts. | – |
 | `02_run_audit.py` | Scores all 10 models over all prompts (4-bit NF4, sequential load/unload, checkpointed). | ✅ |
 | `03_analyze.py` | DFG / CLFI, regressions, main figures and LaTeX tables. | – |
 | `04_robustness.py` | Translation-quality confound, CLFI↔DFG redundancy, cluster-robust and mixed-effects reruns. | – |
@@ -49,7 +51,8 @@ Scripts run in numeric order. Only `02` needs a GPU.
 | `09_reanalysis.py` | Revision reanalysis: collapsed-pair audit, Layer-A-only paired DFG, sign-flip permutation + BH-FDR per cell, analytic null, bootstrap DFG − own floor, binary SS, probe-level variance decomposition, paraphrase fidelity, regression refit. Regenerates Tables 1/6/9 and Figure 1a. | – |
 | `10_positive_control.py` | `--synthetic`: spike-in power curve (CPU). Default: stereotype-priming prefix positive control (en, fr). | ✅ |
 | `11_add_language.py` | Adds a language post hoc (default Amharic) with all-field back-translation and collapse checks. | ✅ (score) |
-| `12_human_paraphrase.py` | 100-probe human-written paraphrase set as a 4th noise-floor pivot. | ✅ (score) |
+| `12_human_paraphrase.py` | 100-item LLM-written rewording set as a 4th noise-floor pivot (labelled `llm`). | ✅ (score) |
+| `13_paper_figures.py` | Every number, figure and main table in the paper (`results/reanalysis/paper_numbers.json`). | – |
 
 GPU steps for the revision: see [`GPU_RUNBOOK.md`](MultilingualBiasAudit/GPU_RUNBOOK.md) and `run_gpu_extensions.sh`.
 
