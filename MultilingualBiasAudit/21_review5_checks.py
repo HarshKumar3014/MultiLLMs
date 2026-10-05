@@ -209,32 +209,7 @@ def main():
     json.dump(N, open(OUT / "review5_checks.json", "w"), indent=1, default=float)
 
     # ── tables ──
-    def ci(d, k="slope"):
-        return f"{d[k]:.2f} [{d[k + '_lo']:.2f}, {d[k + '_hi']:.2f}]"
-    t = [r"\begin{table*}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{4pt}",
-         r"\begin{tabular}{lcccccc}", r"\toprule",
-         r" & \multicolumn{3}{c}{\textbf{Translated}} & \multicolumn{3}{c}{\textbf{Reworded English}} \\",
-         r"\cmidrule(lr){2-4}\cmidrule(lr){5-7}",
-         r"\textbf{Items} & $r$ [95\% CI] & SD ratio & slope [95\% CI] & $r$ [95\% CI] & SD ratio & slope [95\% CI] \\",
-         r"\midrule"]
-    def row(name, tr, rw_):
-        rw_s = f"{rw_['r']:.2f} [{rw_['r_lo']:.2f}, {rw_['r_hi']:.2f}] & {rw_['sd_ratio']:.2f} & {ci(rw_)}" if rw_ else "-- & -- & --"
-        return (f"{name} & {tr['r']:.2f} [{tr['r_lo']:.2f}, {tr['r_hi']:.2f}] & {tr['sd_ratio']:.2f} & {ci(tr)} & "
-                f"{rw_s} \\\\")
-    t.append(row("All", A["translated_all"], A["reworded_all"]))
-    t.append(r"\midrule")
-    for s in ["StereoSet", "BBQ", "Written"]:
-        t.append(row(s, A[f"src_tr_{s}"], A[f"src_rw_{s}"]))
-    t.append(r"\midrule")
-    for l in ORDER:
-        t.append(row(NAME[l], A[f"lang_{l}"], None))
-    t += [r"\bottomrule", r"\end{tabular}",
-          r"\caption{Association between an item's English score and its score after translation or rewording: "
-          r"correlation $r$, ratio of standard deviations, and least-squares slope ($= r \times$ SD ratio), each with "
-          r"a 95\% bootstrap interval over items. Low slopes after translation come from low correlation, not from "
-          r"compressed scores: the SD ratio stays near 1.}",
-          r"\label{tab:assoc}", r"\end{table*}"]
-    (TABLES_DIR / "tab_assoc.tex").write_text("\n".join(t) + "\n")
+    # tab_assoc is written by 22_review6_checks.py (adds preserved-only and within-language rows)
 
     t = [r"\begin{table}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{2pt}",
          r"\begin{tabular}{lccccc}", r"\toprule",
@@ -268,7 +243,7 @@ def main():
          f"LLM rewordings of English sampled / usable & {fl['llm_rewordings_sampled']} / {fl['llm_rewordings_used']} \\\\",
          f"Hindi/Spanish rewordings attempted / passed & {fl['target_rewordings_attempted']} / {fl['target_rewordings_passed']} \\\\",
          r"\quad usable after removing collapsed translations & 129 / 101 \\",
-         r"Translations judged for contrast preservation & 210 \\",
+         r"Translations judged for contrast preservation & 2,497 \\",
          r"\bottomrule", r"\end{tabular}",
          r"\caption{Items at each stage. Every translated or reworded item is compared only with its own English "
          r"original, scored by the same model.}",

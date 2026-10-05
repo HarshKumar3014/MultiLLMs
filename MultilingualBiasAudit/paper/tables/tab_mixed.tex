@@ -1,22 +1,22 @@
 \begin{table*}[t]
 \centering
 \small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{lcccc}
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{lccccccc}
 \toprule
- & \multicolumn{2}{c}{\textbf{All items}} & \multicolumn{2}{c}{\textbf{BBQ + written}} \\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}
-\textbf{Language} & beyond rew. & $q$ & beyond rew. & $q$ \\
+ & \multicolumn{2}{c}{\textbf{All items}} & \multicolumn{3}{c}{\textbf{Fully preserved only}} & \multicolumn{2}{c}{\textbf{BBQ + written}} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-6}\cmidrule(lr){7-8}
+\textbf{Language} & beyond rew. & $q$ & kept & beyond rew. & $q$ & beyond rew. & $q$ \\
 \midrule
-Spanish & .006 [$-$.009, .021] & .439 & $-$.012 [$-$.043, .020] & .635 \\
-French & .016 [.000, .032] & .050 & .009 [$-$.020, .038] & .636 \\
-Chinese & .018 [.001, .036] & .050 & .022 [$-$.010, .054] & .420 \\
-Arabic & .018 [.003, .034] & .038 & .005 [$-$.023, .034] & .717 \\
-Korean & .025 [.008, .041] & .008 & .023 [$-$.007, .054] & .420 \\
-Swahili & .028 [.010, .046] & .008 & .014 [$-$.018, .046] & .635 \\
-Hindi & .029 [.015, .043] & $<$.001 & .027 [$-$.001, .055] & .411 \\
+Spanish & .006 [$-$.009, .021] & .439 & 266/349 & .001 [$-$.017, .020] & .887 & $-$.012 [$-$.043, .020] & .635 \\
+French & .016 [.000, .032] & .050 & 295/360 & .004 [$-$.013, .021] & .758 & .009 [$-$.020, .038] & .636 \\
+Chinese & .018 [.001, .036] & .050 & 251/361 & .011 [$-$.008, .032] & .491 & .022 [$-$.010, .054] & .420 \\
+Arabic & .018 [.003, .034] & .038 & 272/361 & .008 [$-$.009, .025] & .491 & .005 [$-$.023, .034] & .717 \\
+Korean & .025 [.008, .041] & .008 & 197/361 & .022 [.002, .042] & .139 & .023 [$-$.007, .054] & .420 \\
+Swahili & .028 [.010, .046] & .008 & 209/348 & .015 [$-$.006, .036] & .407 & .014 [$-$.018, .046] & .635 \\
+Hindi & .029 [.015, .043] & $<$.001 & 239/357 & .028 [.010, .047] & .027 & .027 [$-$.001, .055] & .411 \\
 \bottomrule
 \end{tabular}
-\caption{Item-level test of each language against English rewording. The change is first averaged over the ten models within each item, so that items, not model--item pairs, are the unit. \textbf{beyond rew.}: how much more the language drops below English than rewording does, with a 95\% bootstrap interval over items; $q$: paired sign-flip permutation test over items, false-discovery corrected.}
+\caption{Item-level test of each language against English rewording. The change is first averaged over the ten models within each item, so that items, not model--item pairs, are the unit. \textbf{beyond rew.}: how much more the language drops below English than rewording does, with a 95\% bootstrap interval over items; $q$: paired sign-flip permutation test over items, false-discovery corrected. \textbf{Fully preserved only}: translations whose contrast was judged fully preserved (\textbf{kept}: fully preserved out of all judged translations). \textbf{BBQ + written}: all items from these two sources, without StereoSet.}
 \label{tab:mixed}
 \end{table*}
