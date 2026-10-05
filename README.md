@@ -59,6 +59,7 @@ Scripts run in numeric order. `02`, `05`, `10`–`12` need a GPU (see `Multiling
 | `17_review3_checks.py` | Results by source (incl. BBQ + written only), mixed model testing each translation against rewording, and the 210-item contrast-preservation sample (`data/contrast_judgment_sample.csv`, LLM-judged). Run after `16`. | – |
 | `18_review_gpu_runs.py` + `run_gpu_review.sh` | GPU: rewords Hindi/Spanish items within the language (Aya-Expanse-32B, validated) and scores them plus StereoSet without its blank context. | ✅ |
 | `19_review_runs_analysis.py` | Within-language vs cross-language carry-over; StereoSet without context. | – |
+| `20_review4_checks.py` | Item-level inference (models averaged within item; permutation + bootstrap over items) per language, also on BBQ + written only; how much the within-language rewordings changed; robustness without the Aya models. Run last. | – |
 
 GPU steps for the revision: see [`GPU_RUNBOOK.md`](MultilingualBiasAudit/GPU_RUNBOOK.md) and `run_gpu_extensions.sh`.
 

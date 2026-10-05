@@ -1,22 +1,25 @@
 \begin{table}[t]
 \centering
 \small
-\setlength{\tabcolsep}{2.5pt}
+\setlength{\tabcolsep}{1.6pt}
 \begin{tabular}{lccc}
 \toprule
-\textbf{Change} & \textbf{Slope} & \textbf{Same choice} & \textbf{Items} \\
+\textbf{Change} & \textbf{Slope} & \textbf{Same} & \textbf{Items} \\
 \midrule
-Hindi $\rightarrow$ reworded Hindi & 0.83 & 83\% & 129 \\
-English $\rightarrow$ Hindi & 0.16 & -- & 129 \\
-Spanish $\rightarrow$ reworded Spanish & 0.82 & 81\% & 101 \\
-English $\rightarrow$ Spanish & 0.46 & -- & 101 \\
-English $\rightarrow$ reworded English & 0.69 & -- & -- \\
+\multicolumn{4}{l}{\emph{Hindi items (129)}} \\
+\quad Hindi $\rightarrow$ reworded Hindi & 0.83 & 83\% & 129 \\
+\quad English $\rightarrow$ Hindi & 0.16 & -- & 129 \\
+\quad English $\rightarrow$ reworded English & 0.69 & -- & 129 \\
+\multicolumn{4}{l}{\emph{Spanish items (101)}} \\
+\quad Spanish $\rightarrow$ reworded Spanish & 0.82 & 81\% & 101 \\
+\quad English $\rightarrow$ Spanish & 0.46 & -- & 101 \\
+\quad English $\rightarrow$ reworded English & 0.75 & -- & 101 \\
 \midrule
 \multicolumn{4}{l}{\emph{StereoSet scored without the blank context}} \\
-Reliable drops & \multicolumn{3}{l}{37/70 (with context: 41/70)} \\
-Carry-over slope & \multicolumn{3}{l}{0.18 (with context: 0.15)} \\
+Reliable drops & \multicolumn{3}{l}{37/70 (template: 41/70)} \\
+Carry-over slope & \multicolumn{3}{l}{0.18 (template: 0.15)} \\
 \bottomrule
 \end{tabular}
-\caption{Top: carry-over of item-level preferences within a language (each translated item reworded in the same language by Aya-Expanse-32B, which is not among the audited models; 129 Hindi and 101 Spanish items passed validation) and across languages, on the same items. Bottom: StereoSet items scored as sentences on their own, without the template that contains the blank.}
+\caption{Top: carry-over of item-level preferences within a language (each translated item reworded in the same language by Aya-Expanse-32B, which is not among the audited models; 129 Hindi and 101 Spanish items passed validation), across languages, and within English by machine round-trip rewording, all on the same items. \\textbf{Same}: same choice as before the change. Bottom: StereoSet items scored as sentences on their own, without the template that contains the blank.}
 \label{tab:review_runs}
 \end{table}

@@ -93,26 +93,27 @@ def main():
     json.dump(N, open(OUT / "review_runs.json", "w"), indent=1, default=float)
 
     # ── table ──
-    t = [r"\begin{table}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{2.5pt}",
+    t = [r"\begin{table}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{1.6pt}",
          r"\begin{tabular}{lccc}", r"\toprule",
-         r"\textbf{Change} & \textbf{Slope} & \textbf{Same choice} & \textbf{Items} \\", r"\midrule"]
+         r"\textbf{Change} & \textbf{Slope} & \textbf{Same} & \textbf{Items} \\", r"\midrule"]
     for l, w in within.items():
-        t.append(f"{NAME[l]} $\\rightarrow$ reworded {NAME[l]} & {w['slope_within']:.2f} & "
+        t.append(f"\\multicolumn{{4}}{{l}}{{\\emph{{{NAME[l]} items ({w['items']})}}}} \\\\")
+        t.append(f"\\quad {NAME[l]} $\\rightarrow$ reworded {NAME[l]} & {w['slope_within']:.2f} & "
                  f"{100*w['agree_within']:.0f}\\% & {w['items']} \\\\")
-        t.append(f"English $\\rightarrow$ {NAME[l]} & {w['slope_cross_same_items']:.2f} & -- & {w['items']} \\\\")
-    if within:
-        w0 = next(iter(within.values()))
-        t.append(f"English $\\rightarrow$ reworded English & {w0['slope_en_rewording_same_items']:.2f} & -- & -- \\\\")
+        t.append(f"\\quad English $\\rightarrow$ {NAME[l]} & {w['slope_cross_same_items']:.2f} & -- & {w['items']} \\\\")
+        t.append(f"\\quad English $\\rightarrow$ reworded English & {w['slope_en_rewording_same_items']:.2f} & -- & "
+                 f"{w['items']} \\\\")
     t += [r"\midrule", r"\multicolumn{4}{l}{\emph{StereoSet scored without the blank context}} \\",
           f"Reliable drops & \\multicolumn{{3}}{{l}}{{{N['nocontext']['reliable']}/70 "
-          f"(with context: {N['nocontext']['with_context']['reliable']}/70)}} \\\\",
+          f"(template: {N['nocontext']['with_context']['reliable']}/70)}} \\\\",
           f"Carry-over slope & \\multicolumn{{3}}{{l}}{{{N['nocontext']['slope']:.2f} "
-          f"(with context: {N['nocontext']['with_context']['slope']:.2f})}} \\\\",
+          f"(template: {N['nocontext']['with_context']['slope']:.2f})}} \\\\",
           r"\bottomrule", r"\end{tabular}",
           rf"\caption{{Top: carry-over of item-level preferences within a language (each translated item reworded "
           rf"in the same language by Aya-Expanse-32B, which is not among the audited models; "
           rf"{within.get('hi',{}).get('items',0)} Hindi and {within.get('es',{}).get('items',0)} Spanish items "
-          rf"passed validation) and across languages, on the same items. Bottom: StereoSet items scored as "
+          rf"passed validation), across languages, and within English by machine round-trip rewording, all on the "
+          rf"same items. \\textbf{{Same}}: same choice as before the change. Bottom: StereoSet items scored as "
           rf"sentences on their own, without the template that contains the blank.}}",
           r"\label{tab:review_runs}", r"\end{table}"]
     (TABLES_DIR / "tab_review_runs.tex").write_text("\n".join(t) + "\n")

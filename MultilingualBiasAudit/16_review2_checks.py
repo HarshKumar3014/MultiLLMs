@@ -211,8 +211,8 @@ def main():
           r"models of the change from English, before and after regressing out differences in token count "
           r"between the two continuations and in overall length (\emph{length}), and additionally in word "
           r"frequency (\emph{freq.}; no frequency data for Korean and Swahili). $R^2$: variance in the change "
-          r"explained by these properties. Last row: items whose two continuations have the same number of "
-          r"tokens in both languages.}",
+          r"explained by these properties. Last two rows: items whose two continuations have the same number of "
+          r"tokens in both languages, and all pairs.}",
           r"\label{tab:surface}", r"\end{table}"]
     (TABLES_DIR / "tab_surface.tex").write_text("\n".join(t) + "\n")
 

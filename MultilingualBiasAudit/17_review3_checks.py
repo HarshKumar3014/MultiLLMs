@@ -66,6 +66,9 @@ def main():
         cells = re9.cell_tests(q, RNG)
         mm = mixed(q[["d", "base_prompt_id", "model"]], "d ~ 1")
         ci = mm.conf_int().loc["Intercept"]
+        # item-level bootstrap: average over models and languages within each item, resample items
+        it = -q.groupby("base_prompt_id")["d"].mean().to_numpy()
+        bs = it[RNG.integers(0, len(it), size=(5000, len(it)))].mean(1)
         mm_l = mixed(q[["d", "language", "base_prompt_id", "model"]], "d ~ 0 + C(language)")
         cil = mm_l.conf_int()
         bys[name] = {
@@ -74,6 +77,8 @@ def main():
             "reliable_binary": int((cells["q_bh_bin"] < .05).sum()),
             "mixed_drop": float(-mm.params["Intercept"]), "mixed_lo": float(-ci[1]), "mixed_hi": float(-ci[0]),
             "mixed_p": float(mm.pvalues["Intercept"]),
+            "item_drop": float(it.mean()), "item_lo": float(np.percentile(bs, 2.5)),
+            "item_hi": float(np.percentile(bs, 97.5)),
             "mixed_by_lang": {l: {"est": float(-mm_l.params[f"C(language)[{l}]"]),
                                   "lo": float(-cil.loc[f"C(language)[{l}]", 1]),
                                   "hi": float(-cil.loc[f"C(language)[{l}]", 0])} for l in ORDER},
@@ -137,7 +142,7 @@ def main():
     # ── tables ──
     t = [r"\begin{table*}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{4pt}",
          r"\begin{tabular}{lcccccccc}", r"\toprule",
-         r" & & \multicolumn{2}{c}{\textbf{Reliable drops}} & \textbf{Mixed-model drop} & "
+         r" & & \multicolumn{2}{c}{\textbf{Reliable drops}} & \textbf{Drop} & "
          r"\multicolumn{2}{c}{\textbf{Carry-over}} & \multicolumn{2}{c}{\textbf{Same choice}} \\",
          r"\cmidrule(lr){3-4}\cmidrule(lr){6-7}\cmidrule(lr){8-9}",
          r"\textbf{Items} & $n$ & soft & binary & [95\% CI] & transl. & rew. & transl. & rew. \\", r"\midrule"]
@@ -146,12 +151,13 @@ def main():
         if k == "BBQ+Written":
             t.append(r"\midrule")
         t.append(f"{k.replace('+', ' + ')} & {r['items']} & {r['reliable']}/70 & {r['reliable_binary']}/70 & "
-                 f"{r['mixed_drop']:.3f} [${r['mixed_lo']:.3f}$, ${r['mixed_hi']:.3f}$] & {r['slope_tr']:.2f} & "
+                 f"{r['item_drop']:.3f} [${r['item_lo']:.3f}$, ${r['item_hi']:.3f}$] & {r['slope_tr']:.2f} & "
                  f"{r['slope_rw']:.2f} & {100*r['agree_tr']:.0f}\\% & {100*r['agree_rw']:.0f}\\% \\\\")
     t += [r"\bottomrule", r"\end{tabular}",
           r"\caption{Results by source of the items. \textbf{Reliable drops}: model--language pairs (of 70) whose "
           r"drop survives the permutation test with false-discovery correction within that source. "
-          r"\textbf{Mixed-model drop}: average drop below English with crossed random effects for item and model. "
+          r"\textbf{Drop}: average drop below English with a 95\% bootstrap interval over items (the change is "
+          r"averaged over models and languages within each item). "
           r"\textbf{Carry-over} and \textbf{Same choice}: for translations and for English rewordings. The last "
           r"row excludes StereoSet entirely.}",
           r"\label{tab:sources}", r"\end{table*}"]
@@ -175,8 +181,8 @@ def main():
           r"the three English rewordings. \textbf{Drop}: estimated drop below English. \textbf{Beyond "
           r"rewording}: the language's drop minus the average drop under rewording, with 95\% Wald interval; "
           r"$q$: false-discovery corrected.}",
-          r"\label{tab:mixed}", r"\end{table}"]
-    (TABLES_DIR / "tab_mixed.tex").write_text("\n".join(t) + "\n")
+          r"\label{tab:mixed_crossed}", r"\end{table}"]
+    (TABLES_DIR / "tab_mixed_crossed.tex").write_text("\n".join(t) + "\n")
     print(json.dumps({k: N[k] for k in ["by_source", "vs_rewording", "rewording_levels"]}, indent=1, default=float)[:7000])
 
 

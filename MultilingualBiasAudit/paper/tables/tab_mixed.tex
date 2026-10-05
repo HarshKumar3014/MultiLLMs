@@ -1,22 +1,22 @@
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lccc}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{lcccc}
 \toprule
-\textbf{Language} & \textbf{Drop} & \textbf{Beyond rewording} & $q$ \\
+ & \multicolumn{2}{c}{\textbf{All items}} & \multicolumn{2}{c}{\textbf{BBQ + written}} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+\textbf{Language} & beyond rew. & $q$ & beyond rew. & $q$ \\
 \midrule
-Spanish & .007 & .006 [$-$.001, .013] & .088 \\
-French & .017 & .016 [.009, .023] & $<$.001 \\
-Chinese & .019 & .018 [.011, .025] & $<$.001 \\
-Arabic & .019 & .018 [.011, .025] & $<$.001 \\
-Korean & .026 & .024 [.017, .031] & $<$.001 \\
-Swahili & .030 & .028 [.021, .036] & $<$.001 \\
-Hindi & .030 & .029 [.022, .036] & $<$.001 \\
-\midrule
-Reworded & \multicolumn{3}{l}{De .000, Fi $-$.006, Ja .010} \\
+Spanish & .006 [$-$.009, .021] & .439 & $-$.012 [$-$.043, .020] & .635 \\
+French & .016 [.000, .032] & .050 & .009 [$-$.020, .038] & .636 \\
+Chinese & .018 [.001, .036] & .050 & .022 [$-$.010, .054] & .420 \\
+Arabic & .018 [.003, .034] & .038 & .005 [$-$.023, .034] & .717 \\
+Korean & .025 [.008, .041] & .008 & .023 [$-$.007, .054] & .420 \\
+Swahili & .028 [.010, .046] & .008 & .014 [$-$.018, .046] & .635 \\
+Hindi & .029 [.015, .043] & $<$.001 & .027 [$-$.001, .055] & .411 \\
 \bottomrule
 \end{tabular}
-\caption{Mixed model of the item-level change from English, $d \sim 0 + \text{condition} + (1 \mid \text{item}) + (1 \mid \text{model})$, where the condition is one of the seven translations or the three English rewordings. \textbf{Drop}: estimated drop below English. \textbf{Beyond rewording}: the language's drop minus the average drop under rewording, with 95\% Wald interval; $q$: false-discovery corrected.}
+\caption{Item-level test of each language against English rewording. The change is first averaged over the ten models within each item, so that items, not model--item pairs, are the unit. \textbf{beyond rew.}: how much more the language drops below English than rewording does, with a 95\% bootstrap interval over items; $q$: paired sign-flip permutation test over items, false-discovery corrected.}
 \label{tab:mixed}
-\end{table}
+\end{table*}
