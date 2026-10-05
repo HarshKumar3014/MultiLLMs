@@ -493,7 +493,8 @@ def main():
              r"models whose drop survives a permutation test with false-discovery correction, using soft or binary "
              r"scores. \textbf{Carry-over}: slope of the translated score on the English score for the same item "
              r"(1 = fully kept), and how often the model picks the same continuation in both versions. "
-             r"\textbf{Fluency}: how well the model tells the two candidate continuations from the unrelated one. "
+             r"\textbf{Fluency}: how well the model tells the two candidate continuations from the unrelated one "
+             r"(excluding BBQ, whose third option is an ``unknown'' answer). "
              r"Last row: the same measures when English items are only reworded (median over models and the three "
              r"machine rewordings).}",
              r"\label{tab:languages}", r"\end{table*}"]
