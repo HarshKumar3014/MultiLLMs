@@ -93,7 +93,7 @@ def main():
     json.dump(N, open(OUT / "review_runs.json", "w"), indent=1, default=float)
 
     # ── table ──
-    t = [r"\begin{table}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{3.5pt}",
+    t = [r"\begin{table}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{2.5pt}",
          r"\begin{tabular}{lccc}", r"\toprule",
          r"\textbf{Change} & \textbf{Slope} & \textbf{Same choice} & \textbf{Items} \\", r"\midrule"]
     for l, w in within.items():
@@ -109,10 +109,11 @@ def main():
           f"Carry-over slope & \\multicolumn{{3}}{{l}}{{{N['nocontext']['slope']:.2f} "
           f"(with context: {N['nocontext']['with_context']['slope']:.2f})}} \\\\",
           r"\bottomrule", r"\end{tabular}",
-          r"\caption{Top: carry-over of item-level preferences within a language (each translated item reworded "
-          r"in the same language by an LLM that is not among the audited models) and across languages, on the "
-          r"same items. Bottom: StereoSet items scored as sentences on their own, without the template that "
-          r"contains the blank.}",
+          rf"\caption{{Top: carry-over of item-level preferences within a language (each translated item reworded "
+          rf"in the same language by Aya-Expanse-32B, which is not among the audited models; "
+          rf"{within.get('hi',{}).get('items',0)} Hindi and {within.get('es',{}).get('items',0)} Spanish items "
+          rf"passed validation) and across languages, on the same items. Bottom: StereoSet items scored as "
+          rf"sentences on their own, without the template that contains the blank.}}",
           r"\label{tab:review_runs}", r"\end{table}"]
     (TABLES_DIR / "tab_review_runs.tex").write_text("\n".join(t) + "\n")
     print(json.dumps(N, indent=1, default=float)[:5000])
