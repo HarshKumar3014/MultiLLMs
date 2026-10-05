@@ -6,7 +6,7 @@
 \toprule
  & & \multicolumn{2}{c}{\textbf{English score}} & & & & \multicolumn{2}{c}{\textbf{Reliable drops}} & \\
 \cmidrule(lr){3-4}\cmidrule(lr){8-9}
-\textbf{Model} & \textbf{Focus} & soft & binary & \textbf{Gap} & \textbf{Floor} & \textbf{Gap $-$ floor [95\% CI]} & soft & binary & \textbf{CLFI} \\
+\textbf{Model} & \textbf{Focus} & soft & binary & \textbf{Gap} & \textbf{Floor} & \textbf{Gap $-$ floor [95\% CI]} & soft & binary & \textbf{CLCI} \\
 \midrule
 Aya-23-8B & Multiling. & 0.521 & 0.62 & 0.010 & 0.006 & $+0.004$ [$-0.009$, $+0.015$] & 0/7 & 4/7 & 0.990 \\
 Aya-Expanse-8B & Multiling. & 0.526 & 0.59 & 0.010 & 0.008 & $+0.003$ [$-0.012$, $+0.017$] & 0/7 & 1/7 & 0.990 \\
@@ -20,6 +20,6 @@ Qwen-2.5-7B & Regional & 0.552 & 0.66 & 0.034 & 0.013 & $+0.020$ [$+0.001$, $+0.
 OLMo-2-7B & English & 0.547 & 0.65 & 0.034 & 0.004 & $+0.030$ [$+0.007$, $+0.041$]$^{\ast}$ & 5/7 & 5/7 & 0.966 \\
 \bottomrule
 \end{tabular}
-\caption{Results per model, ordered by gap. \textbf{Gap}: mean distance between a language's average score and English's, over the seven languages (DFG). \textbf{Floor}: the same distance between English and reworded English. \textbf{Gap $-$ floor}: with a 95\% bootstrap interval over items; $^{\ast}$ marks intervals above zero. \textbf{Reliable drops}: languages (of seven) whose drop survives the permutation test with false-discovery correction. \textbf{CLFI} $= 1 - $ mean gap.}
+\caption{Results per model, ordered by gap. \textbf{Gap}: mean distance between a language's average score and English's, over the seven languages (the cross-lingual score shift, CSS). \textbf{Floor}: the same distance between English and reworded English. \textbf{Gap $-$ floor}: with a 95\% bootstrap interval over items; $^{\ast}$ marks intervals above zero. \textbf{Reliable drops}: languages (of seven) whose drop survives the permutation test with false-discovery correction. \textbf{CLCI} $= 1 - $ mean gap. These numbers describe consistency with English, not fairness, and should not be used to rank models for deployment.}
 \label{tab:models}
 \end{table*}

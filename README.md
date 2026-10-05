@@ -60,6 +60,7 @@ Scripts run in numeric order. `02`, `05`, `10`–`12` need a GPU (see `Multiling
 | `18_review_gpu_runs.py` + `run_gpu_review.sh` | GPU: rewords Hindi/Spanish items within the language (Aya-Expanse-32B, validated) and scores them plus StereoSet without its blank context. | ✅ |
 | `19_review_runs_analysis.py` | Within-language vs cross-language carry-over; StereoSet without context. | – |
 | `20_review4_checks.py` | Item-level inference (models averaged within item; permutation + bootstrap over items) per language, also on BBQ + written only; how much the within-language rewordings changed; robustness without the Aya models. Run last. | – |
+| `21_review5_checks.py` | Correlation/SD-ratio/slope with item bootstraps; chance baseline for same choice; absolute gap vs absolute floor; BBQ `unknown` selection; reversal vs neutralization; results by social dimension; translation error types; item-flow table. | – |
 
 GPU steps for the revision: see [`GPU_RUNBOOK.md`](MultilingualBiasAudit/GPU_RUNBOOK.md) and `run_gpu_extensions.sh`.
 

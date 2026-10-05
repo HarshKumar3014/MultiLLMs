@@ -514,7 +514,7 @@ def main():
             r" & & \multicolumn{2}{c}{\textbf{English score}} & & & & \multicolumn{2}{c}{\textbf{Reliable drops}} "
             r"& \\", r"\cmidrule(lr){3-4}\cmidrule(lr){8-9}",
             r"\textbf{Model} & \textbf{Focus} & soft & binary & \textbf{Gap} & \textbf{Floor} & "
-            r"\textbf{Gap $-$ floor [95\% CI]} & soft & binary & \textbf{CLFI} \\", r"\midrule"]
+            r"\textbf{Gap $-$ floor [95\% CI]} & soft & binary & \textbf{CLCI} \\", r"\midrule"]
     for _, r in boot.sort_values("mean_dfg").iterrows():
         m = r["model"]
         star = r"$^{\ast}$" if r["diff_lo"] >= 0.0005 else ""
@@ -523,10 +523,12 @@ def main():
                     f"{sig[m]}/7 & {sig_bin[m]}/7 & {N['clfi'][m]:.3f} \\\\")
     rows += [r"\bottomrule", r"\end{tabular}",
              r"\caption{Results per model, ordered by gap. \textbf{Gap}: mean distance between a language's average "
-             r"score and English's, over the seven languages (DFG). \textbf{Floor}: the same distance between "
+             r"score and English's, over the seven languages (the cross-lingual score shift, CSS). \textbf{Floor}: the same distance between "
              r"English and reworded English. \textbf{Gap $-$ floor}: with a 95\% bootstrap interval over items; "
              r"$^{\ast}$ marks intervals above zero. \textbf{Reliable drops}: languages (of seven) whose drop "
-             r"survives the permutation test with false-discovery correction. \textbf{CLFI} $= 1 - $ mean gap.}",
+             r"survives the permutation test with false-discovery correction. \textbf{CLCI} $= 1 - $ mean gap. "
+             r"These numbers describe consistency with English, not fairness, and should not be used to rank "
+             r"models for deployment.}",
              r"\label{tab:models}", r"\end{table*}"]
     (TABLES_DIR / "tab_models.tex").write_text("\n".join(rows) + "\n")
     N["en_soft_by_model"] = en_soft.to_dict(); N["en_bin_by_model"] = en_bin.to_dict()

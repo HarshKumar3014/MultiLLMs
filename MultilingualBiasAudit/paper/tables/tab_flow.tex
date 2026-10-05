@@ -1,0 +1,26 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{5.6cm}r}
+\toprule
+\textbf{Stage} & \textbf{Count} \\
+\midrule
+StereoSet intrasentence items sampled & 200 \\
+BBQ ambiguous items sampled / kept (roles recovered) & 150 / 125 \\
+Items written by the authors & 37 \\
+English items & 362 \\
+Translated items (7 languages) & 2,534 \\
+\quad removed: contrast collapsed & 37 \\
+Translated--English pairs per model & 2,497 \\
+Machine rewordings of English (3 pivots) & 1,086 \\
+\quad removed: contrast collapsed & 20 \\
+LLM rewordings of English sampled / usable & 100 / 92 \\
+Hindi/Spanish rewordings attempted / passed & 774 / 247 \\
+\quad usable after removing collapsed translations & 129 / 101 \\
+Translations judged for contrast preservation & 210 \\
+\bottomrule
+\end{tabular}
+\caption{Items at each stage. Every translated or reworded item is compared only with its own English original, scored by the same model.}
+\label{tab:flow}
+\end{table}

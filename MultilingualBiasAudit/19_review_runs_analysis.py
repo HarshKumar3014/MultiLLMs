@@ -113,7 +113,7 @@ def main():
           rf"in the same language by Aya-Expanse-32B, which is not among the audited models; "
           rf"{within.get('hi',{}).get('items',0)} Hindi and {within.get('es',{}).get('items',0)} Spanish items "
           rf"passed validation), across languages, and within English by machine round-trip rewording, all on the "
-          rf"same items. \\textbf{{Same}}: same choice as before the change. Bottom: StereoSet items scored as "
+          rf"same items. \textbf{{Same}}: same choice as before the change. Bottom: StereoSet items scored as "
           rf"sentences on their own, without the template that contains the blank.}}",
           r"\label{tab:review_runs}", r"\end{table}"]
     (TABLES_DIR / "tab_review_runs.tex").write_text("\n".join(t) + "\n")
