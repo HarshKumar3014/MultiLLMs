@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-17_review3_checks.py — Third-round reviewer checks (CPU)
-========================================================
+17_sources_and_contrast_sample.py — Sources and contrast-judgment sample (CPU)
+=============================================================================
   (1) Results by source: reliable drops (permutation + BH within source),
       mixed-model drop per source, and the main findings on BBQ + written
       items only (no StereoSet).
@@ -10,7 +10,7 @@
       fit  d ~ 0 + C(condition)  with crossed random effects for item and
       model, and test each language against the mean rewording condition.
   (3) Sample for a contrast-preservation judgment (30 items per language).
-Writes results/reanalysis/review3_checks.json, data/contrast_judgment_sample.csv
+Writes results/reanalysis/sources_and_contrast_sample.json, data/contrast_judgment_sample.csv
 and paper tables.
 """
 
@@ -137,7 +137,7 @@ def main():
         N["contrast_judgment"] = {"by_lang": j.groupby(["language", "judgment"]).size().unstack(fill_value=0)
                                   .to_dict("index"), "total": j["judgment"].value_counts().to_dict()}
 
-    json.dump(N, open(OUT / "review3_checks.json", "w"), indent=1, default=float)
+    json.dump(N, open(OUT / "sources_and_contrast_sample.json", "w"), indent=1, default=float)
 
     # ── tables ──
     t = [r"\begin{table*}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{4pt}",

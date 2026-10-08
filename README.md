@@ -30,13 +30,13 @@ item-level preferences stay as strong and are reliable within Hindi and
 Spanish, yet only weakly follow the English ones, so averages drift toward
 "no preference."
 
-> **Pipeline errors fixed in this version** (see `label_fix.py` and
+> **Three pipeline checks** (see `label_fix.py` and
 > `02_run_audit.continuation_span`): StereoSet's Hugging Face `gold_label` 0 is
 > *anti*-stereotype; BBQ stereotype roles must come from metadata and question
-> polarity, not answer order; and tokenizing `context + " "` separately skipped
+> polarity, not answer order; and tokenizing `context + " "` separately skips
 > the first continuation token for 9/10 tokenizers. Scores in `results/v2/` use
-> the fixed scorer; files directly in `results/` are the old (invalid) v1 run,
-> kept for the record. The paper's figures and numbers come from
+> the offset-based scorer; files directly in `results/` were scored with the
+> off-by-one and are used only to show its effect (`14_pipeline_ablation.py`). The paper's figures and numbers come from
 > `09_reanalysis.py`, `13_paper_figures.py` and `14`–`22`.
 
 ## Pipeline
@@ -61,13 +61,13 @@ Scripts run in numeric order. Older scripts and file names use DFG / CLFI, the e
 | `13_paper_figures.py` | Every number, figure and main table in the paper (`results/reanalysis/paper_numbers.json`). | – |
 | `14_pipeline_ablation.py` | Reruns the analysis under each combination of the three pipeline errors (paper's pipeline table). | – |
 | `15_robustness_checks.py` | Summed vs. per-token log-probability, length controls, per-language filters, 200-run injected-shift check. | – |
-| `16_review2_checks.py` | Crossed mixed model (item × model), nested faithful-translation filter with paired bootstrap, results by source, length + word-frequency controls. Run after `13`. | – |
-| `17_review3_checks.py` | Results by source (incl. BBQ + written only), mixed model testing each translation against rewording, and the 210-item contrast-preservation sample (`data/contrast_judgment_sample.csv`, LLM-judged). Run after `16`. | – |
-| `18_review_gpu_runs.py` + `run_gpu_review.sh` | GPU: rewords Hindi/Spanish items within the language (Aya-Expanse-32B, validated) and scores them plus StereoSet without its blank context. | ✅ |
-| `19_review_runs_analysis.py` | Within-language vs cross-language carry-over; StereoSet without context. | – |
-| `20_review4_checks.py` | Item-level inference (models averaged within item; permutation + bootstrap over items) per language, also on BBQ + written only; how much the within-language rewordings changed; robustness without the Aya models. Run last. | – |
-| `21_review5_checks.py` | Chance baseline for same choice; absolute gap vs absolute floor; BBQ `unknown` selection; reversal vs neutralization; results by social dimension; item-flow table. | – |
-| `22_review6_checks.py` | Contrast preservation for all 2,497 translations (`data/contrast_judgment_full.csv`, LLM-judged); item-level test and association on fully preserved items; item-level power; within-language reliability; StereoSet without gender. Run after `21`. | – |
+| `16_controls_and_sources.py` | Crossed mixed model (item × model), nested faithful-translation filter with paired bootstrap, results by source, length + word-frequency controls. Run after `13`. | – |
+| `17_sources_and_contrast_sample.py` | Results by source (incl. BBQ + written only), mixed model testing each translation against rewording, and the 210-item contrast-preservation sample (`data/contrast_judgment_sample.csv`, LLM-judged). Run after `16`. | – |
+| `18_within_language_gpu_runs.py` + `run_gpu_within_language.sh` | GPU: rewords Hindi/Spanish items within the language (Aya-Expanse-32B, validated) and scores them plus StereoSet without its blank context. | ✅ |
+| `19_within_language_analysis.py` | Within-language vs cross-language carry-over; StereoSet without context. | – |
+| `20_item_level_tests.py` | Item-level inference (models averaged within item; permutation + bootstrap over items) per language, also on BBQ + written only; how much the within-language rewordings changed; robustness without the Aya models. Run last. | – |
+| `21_association_and_dimensions.py` | Chance baseline for same choice; absolute gap vs absolute floor; BBQ `unknown` selection; reversal vs neutralization; results by social dimension; item-flow table. | – |
+| `22_translation_quality.py` | Contrast preservation for all 2,497 translations (`data/contrast_judgment_full.csv`, LLM-judged); item-level test and association on fully preserved items; item-level power; within-language reliability; StereoSet without gender. Run after `21`. | – |
 
 GPU steps for the revision: see [`GPU_RUNBOOK.md`](MultilingualBiasAudit/GPU_RUNBOOK.md) and `run_gpu_extensions.sh`.
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-19_review_runs_analysis.py — Analyse the GPU runs of 18_review_gpu_runs.py (CPU)
+19_within_language_analysis.py — Analyse the GPU runs of 18_within_language_gpu_runs.py (CPU)
 ================================================================================
   (1) Within-language carry-over: translated Hindi/Spanish item -> the same
       item reworded in Hindi/Spanish. Compared with English -> reworded English
       (within-language reference) and English -> Hindi/Spanish (cross-language).
   (2) StereoSet scored without its blank context: drop below English, reliable
       cells, and English -> target carry-over, next to the with-context values.
-Writes results/reanalysis/review_runs.json and paper/tables/tab_review_runs.tex.
+Writes results/reanalysis/within_language_runs.json and paper/tables/tab_within_language.tex.
 """
 
 import json
@@ -33,8 +33,8 @@ def slope(x, y):
 
 
 def main():
-    files = sorted((SCORES_DIR / "review_runs").glob("*.csv"))
-    assert files, "no results/v2/review_runs/*.csv — run 18_review_gpu_runs.py --score first"
+    files = sorted((SCORES_DIR / "within_language_runs").glob("*.csv"))
+    assert files, "no results/v2/within_language_runs/*.csv — run 18_within_language_gpu_runs.py --score first"
     rr = label_fix.fix_scores(pd.concat([pd.read_csv(f) for f in files], ignore_index=True))
     prompts, para, df, noise = re9.load_inputs()
     col, cp, _ = re9.audit_collapses(prompts, para)
@@ -90,7 +90,7 @@ def main():
                          "reliable": int((cells_ctx["q_bh"] < .05).sum()),
                          "slope": slope(ps["x"], ps["y"])},
     }
-    json.dump(N, open(OUT / "review_runs.json", "w"), indent=1, default=float)
+    json.dump(N, open(OUT / "within_language_runs.json", "w"), indent=1, default=float)
 
     # ── table ──
     t = [r"\begin{table}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{1.6pt}",
@@ -115,8 +115,8 @@ def main():
           rf"passed validation), across languages, and within English by machine round-trip rewording, all on the "
           rf"same items. \textbf{{Same}}: same choice as before the change. Bottom: StereoSet items scored as "
           rf"sentences on their own, without the template that contains the blank.}}",
-          r"\label{tab:review_runs}", r"\end{table}"]
-    (TABLES_DIR / "tab_review_runs.tex").write_text("\n".join(t) + "\n")
+          r"\label{tab:within_language}", r"\end{table}"]
+    (TABLES_DIR / "tab_within_language.tex").write_text("\n".join(t) + "\n")
     print(json.dumps(N, indent=1, default=float)[:5000])
 
 

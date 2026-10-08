@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-13_paper_figures.py — Every number and figure in the NAACL paper (CPU)
+13_paper_figures.py — Every number and figure in the paper (CPU)
 ======================================================================
 Reads v2 scores through 09_reanalysis.load_inputs (benchmark roles fixed,
 collapsed pairs removed) and writes
@@ -580,7 +580,7 @@ def main():
              r"\label{tab:floor}", r"\end{table}"]
     (TABLES_DIR / "tab_floor.tex").write_text("\n".join(rows) + "\n")
 
-    # (Table "controls" is written by 16_review2_checks.py: nested filter + paired bootstrap)
+    # (Table "controls" is written by 16_controls_and_sources.py: nested filter + paired bootstrap)
     rb = json.load(open(OUT / "robustness_checks.json"))
 
     # ── Table: summed instead of per-token log-probability ──

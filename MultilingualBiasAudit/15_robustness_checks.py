@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-15_robustness_checks.py — Reviewer-requested robustness checks (CPU)
+15_robustness_checks.py — Robustness checks (CPU)
 ====================================================================
   (1) Surface features: how much of the item-level change d is explained by
       token counts / length differences of the two continuations, and does

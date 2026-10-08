@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-16_review2_checks.py — Second-round reviewer checks (CPU)
-=========================================================
+16_controls_and_sources.py — Controls and results by source (CPU)
+=================================================================
   (1) Mixed model: item-level change d ~ language, with crossed random effects
       for item and model (models are not independent evidence).
   (2) Faithful-translation filter, nested in the full set, per language and
@@ -10,7 +10,7 @@
       reworded, and by whether StereoSet's "BLANK" survived translation.
   (4) Surface controls: model agreement on d before/after removing length and
       word-frequency differences (wordfreq; no data for Swahili, Korean).
-Writes results/reanalysis/review2_checks.json and paper tables.
+Writes results/reanalysis/controls_and_sources.json and paper tables.
 """
 
 import itertools
@@ -175,7 +175,7 @@ def main():
     N["german_subset"] = {"items": int(g["prompt_id"].nunique()), "mean_change": float(g["d"].mean()),
                           "se_items": float(g.groupby("prompt_id")["d"].mean().std() / np.sqrt(g["prompt_id"].nunique()))}
 
-    json.dump(N, open(OUT / "review2_checks.json", "w"), indent=1, default=float)
+    json.dump(N, open(OUT / "controls_and_sources.json", "w"), indent=1, default=float)
 
     # ── tables ──
     t = [r"\begin{table}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{3pt}",

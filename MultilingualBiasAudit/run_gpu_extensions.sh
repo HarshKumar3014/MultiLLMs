@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Re-scores the main audit + noise floor with the fixed scorer (v2, into
-# results/v2/), then runs every new GPU job for the NAACL revision, resumably, in the order that
+# results/v2/), then runs every other GPU job, resumably, in the order that
 # gives usable results earliest. Safe to re-run after a disconnect: every step
 # resumes from its per-model checkpoint.
 #

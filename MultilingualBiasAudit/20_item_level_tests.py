@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-20_review4_checks.py — Fourth-round reviewer checks (CPU)
-=========================================================
+20_item_level_tests.py — Item-level tests (CPU)
+==============================================
   (1) Item-level inference. All models read the same translation, so the item
       is the unit: average the change over models within each item, then test
       each language against rewording with a paired sign-flip permutation test
@@ -11,7 +11,7 @@
       similarity, share of fields unchanged), and carry-over on items where
       context and both continuations changed; without the two Aya models;
       English comparisons on exactly the same items.
-Writes results/reanalysis/review4_checks.json and paper tables.
+Writes results/reanalysis/item_level_tests.json.
 """
 
 import json
@@ -78,7 +78,7 @@ def main():
     N["item_level_bbq_written"] = item_level_tests(p[keep], n[keep_n])
 
     # ── (3) target-language rewording: how much changed ──
-    rr = label_fix.fix_scores(pd.concat([pd.read_csv(f) for f in sorted((SCORES_DIR / "review_runs").glob("*.csv"))]))
+    rr = label_fix.fix_scores(pd.concat([pd.read_csv(f) for f in sorted((SCORES_DIR / "within_language_runs").glob("*.csv"))]))
     rw = rr[rr["condition"] == "rw_target"][["model", "prompt_id", "language", "stereotype_score"]] \
         .rename(columns={"stereotype_score": "ss_rw"})
     a = df[(df["layer"] == "A") & ~df["prompt_id"].isin(col)]
@@ -130,30 +130,9 @@ def main():
                      "items_en_llm_overlap": int(le["base_prompt_id"].nunique()),
                      "slope_en_llm_overlap": slope(le["x"], le["y"]) if le["base_prompt_id"].nunique() >= 15 else None}
     N["within"] = within
-    json.dump(N, open(OUT / "review4_checks.json", "w"), indent=1, default=float)
+    json.dump(N, open(OUT / "item_level_tests.json", "w"), indent=1, default=float)
 
-    # ── tables ──
-    def f3(x):
-        v = f"{abs(x):.3f}"[1:]
-        return f"$-${v}" if x < -0.0005 else v
-    t = [r"\begin{table*}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{6pt}",
-         r"\begin{tabular}{lcccc}", r"\toprule",
-         r" & \multicolumn{2}{c}{\textbf{All items}} & \multicolumn{2}{c}{\textbf{BBQ + written}} \\",
-         r"\cmidrule(lr){2-3}\cmidrule(lr){4-5}",
-         r"\textbf{Language} & beyond rew. & $q$ & beyond rew. & $q$ \\", r"\midrule"]
-    for l in ORDER:
-        r1, r2 = N["item_level"][l], N["item_level_bbq_written"][l]
-        qs = lambda q: "$<$.001" if q < .001 else f"{q:.3f}"[1:]
-        t.append(f"{NAME[l]} & {f3(r1['beyond'])} [{f3(r1['lo'])}, {f3(r1['hi'])}] & {qs(r1['q'])} & "
-                 f"{f3(r2['beyond'])} [{f3(r2['lo'])}, {f3(r2['hi'])}] & {qs(r2['q'])} \\\\")
-    t += [r"\bottomrule", r"\end{tabular}",
-          r"\caption{Item-level test of each language against English rewording. The change is first averaged "
-          r"over the ten models within each item, so that items, not model--item pairs, are the unit. "
-          r"\textbf{beyond rew.}: how much more the language drops below English than rewording does, with a 95\% "
-          r"bootstrap interval over items; $q$: paired sign-flip permutation test over items, false-discovery "
-          r"corrected.}",
-          r"\label{tab:mixed}", r"\end{table*}"]
-    (TABLES_DIR / "tab_mixed.tex").write_text("\n".join(t) + "\n")
+    # tab_mixed is written by 22_translation_quality.py (adds the fully-preserved columns)
     print(json.dumps(N, indent=1, default=float)[:6000])
 
 

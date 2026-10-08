@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-22_review6_checks.py — Sixth-round reviewer checks (CPU)
-========================================================
+22_translation_quality.py — Translation quality: contrast preservation for all items (CPU)
+========================================================================================
   (1) Contrast preservation for every translated item (data/contrast_judgment_full.csv,
       judged by an LLM with the same criteria as the 210-pair sample, applied
       strictly: "partly" whenever the pair differs outside the contrast slot or
       the contrast word shifts in meaning). Counts by language and source.
-  (2) Item-level test against English rewording (as in 20_review4_checks) on all
+  (2) Item-level test against English rewording (as in 20_item_level_tests) on all
       items, on fully preserved items only, and on items whose contrast is not lost.
   (3) English-to-translation association (r, SD ratio, slope) on the same subsets.
   (4) Drop by judgment, per language, with bootstrap intervals over items.
@@ -14,7 +14,7 @@
   (6) Within-language reliability (Hindi, Spanish): correlation between a
       translated item's score and its target-language rewording, bootstrap over items.
   (7) StereoSet drop without the gender items.
-Writes results/reanalysis/review6_checks.json and paper tables.
+Writes results/reanalysis/translation_quality.json and paper tables.
 """
 
 import json
@@ -26,8 +26,8 @@ import pandas as pd
 from config import RESULTS_DIR, SCORES_DIR, TABLES_DIR, DATA_DIR
 
 re9 = import_module("09_reanalysis")
-r4 = import_module("20_review4_checks")
-r5 = import_module("21_review5_checks")
+r4 = import_module("20_item_level_tests")
+r5 = import_module("21_association_and_dimensions")
 import label_fix
 
 OUT = RESULTS_DIR / "reanalysis"
@@ -121,7 +121,7 @@ def main():
     N["power"] = {l: {str(dl): power(item_diffs(p, n, l), dl) for dl in (0.02, 0.03)} for l in ORDER}
 
     # ── (6) within-language reliability ──
-    rr = label_fix.fix_scores(pd.concat([pd.read_csv(f) for f in sorted((SCORES_DIR / "review_runs").glob("*.csv"))]))
+    rr = label_fix.fix_scores(pd.concat([pd.read_csv(f) for f in sorted((SCORES_DIR / "within_language_runs").glob("*.csv"))]))
     rw = rr[rr["condition"] == "rw_target"][["model", "prompt_id", "language", "stereotype_score"]] \
         .rename(columns={"stereotype_score": "ss_rw"})
     a = df[(df["layer"] == "A") & ~df["prompt_id"].isin(col)]
@@ -134,7 +134,7 @@ def main():
     ng = ss[~ss["base_prompt_id"].map(cat).str.lower().str.contains("gender")]
     N["stereoset_no_gender"] = boot_drop(ng)
     N["stereoset_all"] = boot_drop(ss)
-    json.dump(N, open(OUT / "review6_checks.json", "w"), indent=1, default=float)
+    json.dump(N, open(OUT / "translation_quality.json", "w"), indent=1, default=float)
 
     # ── tables ──
     def f3(x):
@@ -148,7 +148,7 @@ def main():
          r"\multicolumn{2}{c}{\textbf{BBQ + written}} \\",
          r"\cmidrule(lr){2-3}\cmidrule(lr){4-6}\cmidrule(lr){7-8}",
          r"\textbf{Language} & beyond rew. & $q$ & kept & beyond rew. & $q$ & beyond rew. & $q$ \\", r"\midrule"]
-    bw = json.load(open(OUT / "review4_checks.json"))["item_level_bbq_written"]
+    bw = json.load(open(OUT / "item_level_tests.json"))["item_level_bbq_written"]
     for l in ORDER:
         r1, r2, r3 = N["item_level"]["all"][l], N["item_level"]["preserved"][l], bw[l]
         kept = jc[l].get("preserved", 0); tot = sum(jc[l].values())

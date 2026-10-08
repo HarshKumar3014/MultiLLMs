@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-18_review_gpu_runs.py — GPU runs requested in review (round 3)
-==============================================================
+18_within_language_gpu_runs.py — Within-language rewording and template-free StereoSet (GPU)
+==========================================================================================
   (1) Target-language rewording. For Hindi and Spanish, an LLM that is not
       among the audited models (default: Aya-Expanse-32B) rewords every
       translated item in the same language, keeping the words that differ
@@ -16,10 +16,10 @@
       "... BLANK ..." template, in all eight languages.
 
 Usage (GPU):
-    python 18_review_gpu_runs.py --reword                 # build data/target_rewordings.json
-    python 18_review_gpu_runs.py --score --models qwen2.5-7b --resume
-    python 18_review_gpu_runs.py --test-cpu               # tiny smoke test on CPU
-Outputs: data/target_rewordings.json, results/v2/review_runs/<model>.csv
+    python 18_within_language_gpu_runs.py --reword                 # build data/target_rewordings.json
+    python 18_within_language_gpu_runs.py --score --models qwen2.5-7b --resume
+    python 18_within_language_gpu_runs.py --test-cpu               # tiny smoke test on CPU
+Outputs: data/target_rewordings.json, results/v2/within_language_runs/<model>.csv
 """
 
 import argparse
@@ -34,7 +34,7 @@ from tqdm import tqdm
 
 from config import DATA_DIR, SCORES_DIR, MODEL_REGISTRY, MODEL_NAMES
 
-OUT_DIR = SCORES_DIR / "review_runs"
+OUT_DIR = SCORES_DIR / "within_language_runs"
 REWORD_PATH = DATA_DIR / "target_rewordings.json"
 TARGET_LANGS = {"hi": "Hindi", "es": "Spanish"}
 FIELDS = ["context", "stereotype", "anti_stereotype", "unrelated"]

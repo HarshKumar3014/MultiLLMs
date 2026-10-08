@@ -13,9 +13,9 @@ RESULTS_DIR = PROJECT_ROOT / "results"
 FIGURES_DIR = PROJECT_ROOT / "paper" / "figures"
 TABLES_DIR = PROJECT_ROOT / "paper" / "tables"
 
-# Scores from the fixed scorer (02_run_audit.continuation_span, v2). v1 scores
-# in RESULTS_DIR/*.csv skipped the first continuation token for 9/10 models
-# and are kept only for the record; never resume into them.
+# Scores from the offset-based scorer (02_run_audit.continuation_span, v2). v1
+# scores in RESULTS_DIR/*.csv skip the first continuation token for 9/10 models
+# and are used only for the pipeline ablation; never resume into them.
 SCORES_DIR = RESULTS_DIR / "v2"
 
 for _d in [DATA_DIR, RESULTS_DIR, FIGURES_DIR, TABLES_DIR, SCORES_DIR]:

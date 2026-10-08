@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-21_review5_checks.py — Fifth-round reviewer analyses (CPU)
-==========================================================
+21_association_and_dimensions.py — Association, fates and social dimensions (CPU)
+================================================================================
   (1) Association between English and changed scores: correlation, SD ratio
       and slope with bootstrap intervals over items; pooled, per language,
       per source, per model, and for each rewording.
@@ -15,7 +15,7 @@
   (6) Drop and carry-over by social dimension.
   (7) Translation error types in the judged sample; drop on preserved vs not.
   (8) Item flow through every stage.
-Writes results/reanalysis/review5_checks.json and paper tables.
+Writes results/reanalysis/association_and_dimensions.json and paper tables.
 """
 
 import json
@@ -206,10 +206,10 @@ def main():
                  "llm_rewordings_sampled": 100, "llm_rewordings_used": 92,
                  "target_rewordings_attempted": len(rw),
                  "target_rewordings_passed": sum("context" in v for v in rw.values())}
-    json.dump(N, open(OUT / "review5_checks.json", "w"), indent=1, default=float)
+    json.dump(N, open(OUT / "association_and_dimensions.json", "w"), indent=1, default=float)
 
     # ── tables ──
-    # tab_assoc is written by 22_review6_checks.py (adds preserved-only and within-language rows)
+    # tab_assoc is written by 22_translation_quality.py (adds preserved-only and within-language rows)
 
     t = [r"\begin{table}[t]", r"\centering", r"\small", r"\setlength{\tabcolsep}{2pt}",
          r"\begin{tabular}{lccccc}", r"\toprule",

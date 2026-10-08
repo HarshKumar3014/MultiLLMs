@@ -1,11 +1,13 @@
-# GPU runbook — NAACL revision experiments
+# GPU runbook
 
-**All v1 scores must be regenerated.** The v1 scorer never scored the first
-continuation token for 9 of the 10 tokenizers (only BLOOMZ was unaffected), so
-for "He/She …" probes the pronoun itself was never compared, and single-token
-answers scored −inf. `02_run_audit.continuation_span` fixes this (verified on
-all 10 tokenizers and numerically against a token-by-token reference). New
-scores go to `results/v2/`; `--resume` never touches the v1 files.
+**Use the offset-based scorer.** Locating the continuation by tokenizing
+`context + " "` separately ("v1" below) never scores the first continuation
+token for 9 of the 10 tokenizers (only BLOOMZ is unaffected), so for "He/She …"
+probes the pronoun itself is never compared, and single-token answers score
+−inf. `02_run_audit.continuation_span` ("v2") locates tokens by character
+offsets (verified on all 10 tokenizers and numerically against a token-by-token
+reference). Its scores go to `results/v2/`; the v1 files in `results/` are
+used only for the pipeline ablation (`14_pipeline_ablation.py`).
 
 | Job | Script | Forward passes / model |
 |---|---|---|
@@ -33,7 +35,7 @@ disconnects will force repeated model downloads, though every step resumes.
 
 ```bash
 git clone <repo-url> && cd MultiLLMs/MultilingualBiasAudit
-# simplest: push the revision branch and `git checkout` it here. Otherwise copy
+# simplest: `git checkout` the branch with these scripts here. Otherwise copy
 # every changed file: config.py, 02_run_audit.py, 05_noise_floor.py, 09–12,
 # label_fix.py, run_gpu_extensions.sh, data/label_fix.json,
 # data/positive_control_prefixes.json, data/human_paraphrases.csv
@@ -70,9 +72,9 @@ a runtime reset. Run a subset per session with
 - `results/reanalysis/summary.json` gains `extra_languages: ["am"]` and, with
   human paraphrases, a `human_pivot` block.
 
-## Review round 3: target-language rewording + StereoSet without context
+## Within-language rewording + StereoSet without context
 
-`run_gpu_review.sh` (~1.5–2 h on an A100 80 GB, ~$2–3):
+`run_gpu_within_language.sh` (~1.5–2 h on an A100 80 GB, ~$2–3):
 
 1. Rewords every Hindi and Spanish item in the same language with
    **Aya-Expanse-32B** (not one of the audited models), validates each
@@ -80,20 +82,20 @@ a runtime reset. Run a subset per session with
    retries failures once.
 2. Scores the rewordings and StereoSet sentences *without* their blank
    context with all ten models.
-3. Runs `19_review_runs_analysis.py` → `paper/tables/tab_review_runs.tex`.
+3. Runs `19_within_language_analysis.py` → `paper/tables/tab_within_language.tex`.
 
 Before starting:
 - Accept the licence of `CohereLabs/aya-expanse-32b` on Hugging Face.
 - Rent an instance with **≥ 150 GB disk** (the 32B model is a ~65 GB download).
   With a 40 GB GPU the rewriter loads in 4-bit automatically.
 - Smaller fallback if the 32B model is a problem:
-  `REWRITER=Qwen/Qwen2.5-14B-Instruct bash run_gpu_review.sh` (weaker Hindi).
+  `REWRITER=Qwen/Qwen2.5-14B-Instruct bash run_gpu_within_language.sh` (weaker Hindi).
 
 ```bash
-git clone -b naacl-revision <repo-url> && cd MultiLLMs/MultilingualBiasAudit
+git clone <repo-url> && cd MultiLLMs/MultilingualBiasAudit
 pip install -r requirements.txt
 export HF_TOKEN=hf_...
-bash run_gpu_review.sh 2>&1 | tee review.log
-zip -r review_results.zip results/v2/review_runs data/target_rewordings.json review.log
+bash run_gpu_within_language.sh 2>&1 | tee within_language.log
+zip -r within_language_results.zip results/v2/within_language_runs data/target_rewordings.json within_language.log
 ```
-Copy `review_results.zip` back and unzip it in `MultilingualBiasAudit/`.
+Copy `within_language_results.zip` back and unzip it in `MultilingualBiasAudit/`.

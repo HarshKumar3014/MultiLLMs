@@ -160,13 +160,13 @@
  "rewording_change": {
   "es": {
    "items": 101,
-   "sim_mean": 0.9546176625950502,
+   "sim_mean": 0.9546176596443252,
    "share_fields_unchanged": 0.42244224422442245,
    "share_items_all_changed": 0.24752475247524752
   },
   "hi": {
    "items": 129,
-   "sim_mean": 0.9611501975577007,
+   "sim_mean": 0.9611501966335977,
    "share_fields_unchanged": 0.4082687338501292,
    "share_items_all_changed": 0.2558139534883721
   }

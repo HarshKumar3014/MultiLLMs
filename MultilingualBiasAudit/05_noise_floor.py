@@ -2,11 +2,11 @@
 """
 05_noise_floor.py — Within-Language Perturbation Noise Floor (GPU required)
 =============================================================================
-Addresses review item #1 ("kill shot"): CLFI range is 0.973–0.992, DFG range
-is 0.004–0.013, and the paper never establishes what DFG value is
-distinguishable from noise. This script computes that zero point.
+Cross-language gaps are small (DFG 0.004–0.013 in the uncorrected scores), so
+we need to know what DFG value is distinguishable from noise. This script
+computes that zero point.
 
-Method (as specified in the review):
+Method:
   1. Take the English probe set (Layer A, handcrafted + benchmark templates).
   2. Build 3 independent English *paraphrase* variants via round-trip
      pivot-translation (en -> pivot_lang -> en), using 3 different pivot
@@ -202,8 +202,7 @@ def run_noise_floor_for_model(model_key: str, en_prompts: list[dict], paraphrase
 
 def compute_dfg_noise(all_noise_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Two DISTINCT quantities, which must not be confused (an earlier version of
-    this script conflated them):
+    Two DISTINCT quantities, which must not be confused:
 
     (a) MATCHED noise floor -- the only quantity comparable to the paper's
         reported DFG. The reported DFG is a *difference of probe-set means*,
