@@ -1,28 +1,34 @@
-# How Much of Cross-Lingual Bias Is Noise in Language Models?
+# Lost in Translation: Why Lower Bias Scores Don't Mean Fairer Models
 
 Code, data, and results for a cross-lingual social-bias audit of ten
-open-weights LLMs across eight languages, and for the **noise-floor test**
-that is the paper's central result.
+open-weights LLMs across eight languages.
 
 ## TL;DR of the finding
 
 Cross-language bias audits usually compare a model's average stereotype score
-in English with its average in another language. We ask how much of that gap
-is noise, using a **noise floor** (the gap produced by merely rewording
-English), paired permutation tests with false-discovery correction, and an
-injected-shift check that the test can detect real effects.
+in English with its average in another language and read the difference as a
+difference in fairness. We test such gaps against a **noise floor** (the gap
+produced by merely rewording English), with paired permutation tests and
+false-discovery correction, item-level tests, and an injected-shift check that
+the test can detect real effects.
 
 | Quantity | Value |
 |---|---|
 | Model–language pairs scoring below English | **70 / 70** |
 | …of which reliable after FDR correction (soft / binary score) | 28 / 39 |
-| Average gap per model vs. rewording-English floor | 0.010–0.034 vs. 0.001–0.013 |
-| Carry-over of item-level preference (slope): reworded / translated | **0.66 / 0.26** |
-| Smallest shift detected in ≥75% of runs (≈360 items/language) | ≈0.04 |
+| Reworded-English comparisons reliable (false alarms) | 0 / 30 |
+| Item-level drop beyond rewording, clear (q ≤ 0.008) | Hindi, Korean, Swahili |
+| Drop beyond rewording, all vs. fully preserved translations | 0.020 vs. 0.018 |
+| English → changed-item correlation: reworded / translated | **0.48 / 0.23** |
+| Within-language rewording correlation (Hindi / Spanish) | 0.84 / 0.82 |
+| Injected shift detected (≈360 items/language): 0.02 / 0.04 / 0.06 | 19% / 70% / 94% |
 
-The gaps are real for Hindi, Swahili, Korean and Arabic, but they do **not**
-mean the models are fairer there: item-level preferences stay as strong but
-barely carry over from English, so averages drift toward "no preference."
+The drops are real, mostly on StereoSet items, and do not come from
+identifiable translation errors (every translation was judged for contrast
+preservation). But they do **not** mean the models are fairer there:
+item-level preferences stay as strong and are reliable within Hindi and
+Spanish, yet only weakly follow the English ones, so averages drift toward
+"no preference."
 
 > **Pipeline errors fixed in this version** (see `label_fix.py` and
 > `02_run_audit.continuation_span`): StereoSet's Hugging Face `gold_label` 0 is
@@ -31,18 +37,18 @@ barely carry over from English, so averages drift toward "no preference."
 > the first continuation token for 9/10 tokenizers. Scores in `results/v2/` use
 > the fixed scorer; files directly in `results/` are the old (invalid) v1 run,
 > kept for the record. The paper's figures and numbers come from
-> `09_reanalysis.py` and `13_paper_figures.py`.
+> `09_reanalysis.py`, `13_paper_figures.py` and `14`–`22`.
 
 ## Pipeline
 
-Scripts run in numeric order. `02`, `05`, `10`–`12` need a GPU (see `MultilingualBiasAudit/GPU_RUNBOOK.md`).
+Scripts run in numeric order. Older scripts and file names use DFG / CLFI, the earlier names of the paper's CSS / CLCI. `02`, `05`, `10`–`12` need a GPU (see `MultilingualBiasAudit/GPU_RUNBOOK.md`).
 
 | Script | Does | GPU |
 |---|---|:--:|
 | `01_build_prompts.py` | Builds the item set: StereoSet / BBQ + 37 handcrafted templates (translated to 7 languages; the CrowS-Pairs loader yields no items) and 21 items written in the target languages. Back-translation check on contexts. | – |
 | `02_run_audit.py` | Scores all 10 models over all prompts (4-bit NF4, sequential load/unload, checkpointed). | ✅ |
-| `03_analyze.py` | DFG / CLFI, regressions, main figures and LaTeX tables. | – |
-| `04_robustness.py` | Translation-quality confound, CLFI↔DFG redundancy, cluster-robust and mixed-effects reruns. | – |
+| `03_analyze.py` | v1 analysis (superseded by `09`–`22`). | – |
+| `04_robustness.py` | v1 robustness checks (superseded). | – |
 | `05_noise_floor.py` | The noise-floor experiment: 3 round-trip paraphrase sets (en→{de,ja,fi}→en), scored identically to the main audit. | ✅ |
 | `06_noise_floor_figure.py` | Figure 1a — DFG vs. noise floor, forest plot. | – |
 | `07_power_analysis.py` | Power analysis + per-pivot floor breakdown. | – |
@@ -60,7 +66,8 @@ Scripts run in numeric order. `02`, `05`, `10`–`12` need a GPU (see `Multiling
 | `18_review_gpu_runs.py` + `run_gpu_review.sh` | GPU: rewords Hindi/Spanish items within the language (Aya-Expanse-32B, validated) and scores them plus StereoSet without its blank context. | ✅ |
 | `19_review_runs_analysis.py` | Within-language vs cross-language carry-over; StereoSet without context. | – |
 | `20_review4_checks.py` | Item-level inference (models averaged within item; permutation + bootstrap over items) per language, also on BBQ + written only; how much the within-language rewordings changed; robustness without the Aya models. Run last. | – |
-| `21_review5_checks.py` | Correlation/SD-ratio/slope with item bootstraps; chance baseline for same choice; absolute gap vs absolute floor; BBQ `unknown` selection; reversal vs neutralization; results by social dimension; translation error types; item-flow table. | – |
+| `21_review5_checks.py` | Chance baseline for same choice; absolute gap vs absolute floor; BBQ `unknown` selection; reversal vs neutralization; results by social dimension; item-flow table. | – |
+| `22_review6_checks.py` | Contrast preservation for all 2,497 translations (`data/contrast_judgment_full.csv`, LLM-judged); item-level test and association on fully preserved items; item-level power; within-language reliability; StereoSet without gender. Run after `21`. | – |
 
 GPU steps for the revision: see [`GPU_RUNBOOK.md`](MultilingualBiasAudit/GPU_RUNBOOK.md) and `run_gpu_extensions.sh`.
 
@@ -127,14 +134,14 @@ Requires a HuggingFace token with access to the gated models (Llama, Gemma).
 
 ## Caveats
 
-- **Do not use the per-model rankings** in `results/` as a deployment or
-  procurement signal. That is the paper's point: they do not clear the
-  noise floor.
-- The floor is built from *machine-translated* paraphrases. It agrees to
-  within 15% across typologically distant pivots (de / fi / ja), but
-  cross-validation against human-authored paraphrases and multi-seed
-  inference remains future work.
+- **Do not use the per-model numbers** in `results/` as a deployment or
+  procurement signal: CSS and CLCI measure consistency with English, not
+  fairness, and most per-model gaps are within reach of the noise floor.
+- The floor is built from machine round-trip rewordings (de / fi / ja) and
+  100 LLM-written rewordings (labelled `llm`, not human-written).
+- Translation-quality judgments (`data/contrast_judgment_*.csv`) were made by
+  an LLM, not native speakers.
 - SS is an intrinsic measure; its relationship to downstream generative
   bias is contested.
-- Layer B is 21 probes — a proof-of-concept, far below the power threshold
-  established in the paper. Treat it as a direction, not a result.
+- The 21 items written in the target languages are a proof of concept, far
+  below the sample size needed; they enter no comparison in the paper.
