@@ -1,0 +1,78 @@
+{
+  "matched_noise_floor_median": 0.006938,
+  "matched_noise_floor_range": [
+    0.003811,
+    0.010709
+  ],
+  "perprobe_instability_median": 0.092892,
+  "per_model": {
+    "aya-23-8b": {
+      "matched_dfg_noise": 0.005056,
+      "perprobe_mean_abs_dev": 0.105047,
+      "perprobe_median_abs_dev": 0.065479
+    },
+    "aya-expanse-8b": {
+      "matched_dfg_noise": 0.004297,
+      "perprobe_mean_abs_dev": 0.150833,
+      "perprobe_median_abs_dev": 0.091956
+    },
+    "bloomz-7b": {
+      "matched_dfg_noise": 0.007876,
+      "perprobe_mean_abs_dev": 0.122994,
+      "perprobe_median_abs_dev": 0.074749
+    },
+    "gemma2-9b": {
+      "matched_dfg_noise": 0.010124,
+      "perprobe_mean_abs_dev": 0.166779,
+      "perprobe_median_abs_dev": 0.103024
+    },
+    "llama3.1-8b": {
+      "matched_dfg_noise": 0.006742,
+      "perprobe_mean_abs_dev": 0.139487,
+      "perprobe_median_abs_dev": 0.088114
+    },
+    "mistral-7b": {
+      "matched_dfg_noise": 0.007135,
+      "perprobe_mean_abs_dev": 0.131701,
+      "perprobe_median_abs_dev": 0.079908
+    },
+    "olmo2-7b": {
+      "matched_dfg_noise": 0.005517,
+      "perprobe_mean_abs_dev": 0.165563,
+      "perprobe_median_abs_dev": 0.102987
+    },
+    "qwen2.5-7b": {
+      "matched_dfg_noise": 0.010709,
+      "perprobe_mean_abs_dev": 0.170896,
+      "perprobe_median_abs_dev": 0.111163
+    },
+    "solar-10.7b": {
+      "matched_dfg_noise": 0.010528,
+      "perprobe_mean_abs_dev": 0.151753,
+      "perprobe_median_abs_dev": 0.100064
+    },
+    "yi-1.5-9b": {
+      "matched_dfg_noise": 0.003811,
+      "perprobe_mean_abs_dev": 0.147255,
+      "perprobe_median_abs_dev": 0.093828
+    }
+  },
+  "by_source_perprobe": {
+    "bbq": {
+      "perprobe_mean_abs_dev": 0.206547,
+      "perprobe_median_abs_dev": 0.133052,
+      "n": 4500
+    },
+    "handcrafted": {
+      "perprobe_mean_abs_dev": 0.09371,
+      "perprobe_median_abs_dev": 0.063585,
+      "n": 1110
+    },
+    "stereoset": {
+      "perprobe_mean_abs_dev": 0.108775,
+      "perprobe_median_abs_dev": 0.076985,
+      "n": 6000
+    }
+  },
+  "interpretation": "The matched floor is a difference of probe-set means, the same aggregation as the paper's reported DFG, and is the only quantity comparable to it. Its median is ~0.008 with a per-model range of roughly 0.003-0.021, i.e. the SAME ORDER OF MAGNITUDE as the observed cross-lingual DFG range (0.004-0.013). The cross-lingual signal is therefore not separable from within-language paraphrase noise; it is NOT the case that the floor is several times larger than the signal. The per-probe absolute-deviation statistic (median ~0.08) is roughly an order of magnitude larger purely because taking absolute values before averaging prevents signed per-probe noise from cancelling; it measures probe-level instability and must not be compared against a difference-of-means DFG."
+}

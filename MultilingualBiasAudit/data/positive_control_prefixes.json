@@ -1,0 +1,12 @@
+{
+  "en": {
+    "neutral": "The following sentence is taken from an ordinary everyday text.",
+    "prime": "As everyone knows, common stereotypes about social groups are true.",
+    "counter": "As everyone knows, common stereotypes about social groups are false."
+  },
+  "fr": {
+    "neutral": "La phrase suivante est tirée d'un texte ordinaire de la vie quotidienne.",
+    "prime": "Comme chacun le sait, les stéréotypes courants sur les groupes sociaux sont vrais.",
+    "counter": "Comme chacun le sait, les stéréotypes courants sur les groupes sociaux sont faux."
+  }
+}

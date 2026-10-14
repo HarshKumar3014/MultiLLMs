@@ -1,0 +1,22 @@
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Model} & \textbf{Spanish} & \textbf{French} & \textbf{Chinese} & \textbf{Arabic} & \textbf{Korean} & \textbf{Swahili} & \textbf{Hindi} & \textbf{Noise only} \\
+\midrule
+Aya-23-8B & 0.004 & 0.013 & 0.010 & 0.009 & 0.010 & 0.011 & 0.012 & 0.007 \\
+Aya-Expanse-8B & 0.002 & 0.009 & 0.011 & 0.005 & 0.002 & 0.028 & 0.015 & 0.010 \\
+BLOOMZ-7B & 0.021 & 0.019 & 0.021 & 0.010 & 0.024 & 0.005 & \textbf{0.038} & 0.010 \\
+Gemma-2-9B & 0.004 & 0.017 & 0.014 & 0.010 & 0.022 & 0.012 & \textbf{0.024} & 0.009 \\
+Llama-3.1-8B & 0.008 & 0.014 & 0.017 & 0.017 & 0.019 & \textbf{0.023} & \textbf{0.024} & 0.008 \\
+Mistral-7B & 0.004 & 0.016 & \textbf{0.027} & \textbf{0.032} & \textbf{0.038} & \textbf{0.038} & \textbf{0.035} & 0.007 \\
+OLMo-2-7B & 0.008 & 0.020 & \textbf{0.042} & \textbf{0.030} & \textbf{0.039} & \textbf{0.053} & \textbf{0.047} & 0.010 \\
+Qwen-2.5-7B & 0.012 & \textbf{0.031} & 0.020 & \textbf{0.032} & \textbf{0.038} & \textbf{0.057} & \textbf{0.045} & 0.010 \\
+SOLAR-10.7B & 0.002 & 0.016 & \textbf{0.027} & \textbf{0.026} & \textbf{0.034} & \textbf{0.030} & \textbf{0.028} & 0.009 \\
+Yi-1.5-9B & 0.003 & 0.011 & 0.004 & \textbf{0.024} & \textbf{0.029} & \textbf{0.032} & \textbf{0.031} & 0.009 \\
+\bottomrule
+\end{tabular}
+\caption{How far each language's average stereotype score falls below English, for every model (negative values: above English). Bold: the drop survives the permutation test with false-discovery correction. \textbf{Noise only}: the distance from zero expected if the item-level changes were pure noise, averaged over languages.}
+\label{tab:gap_matrix}
+\end{table*}

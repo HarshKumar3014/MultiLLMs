@@ -1,22 +1,23 @@
 \begin{table}[t]
 \centering
 \small
-\caption{Cross-Lingual Fairness Index (CLFI) Rankings (nominal; see \S4.1 for the noise-floor test). Higher CLFI indicates more equitable bias treatment across languages. Provenance: A=English-Centric, B=Multilingual-Native, C=Regional-Centric (row tint matches Figure 1).}
+\caption{Mean DFG (Layer~A, collapsed pairs removed) against each model's own paraphrase floor, with 95\% bootstrap CIs on the difference (base prompts resampled jointly across languages and pivots). CLFI $=1-\overline{\text{DFG}}$. Sig.: cells (of 7) with BH-FDR $q<0.05$ under a sign-flip permutation test.}
 \label{tab:clfi}
-\begin{tabular}{lccc}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lccccc}
 \toprule
-\textbf{Model} & \textbf{Prov.} & \textbf{CLFI} $\uparrow$ & \textbf{DFG} $\downarrow$ \\
+\textbf{Model} & \textbf{CLFI} & $\overline{\textbf{DFG}}$ & \textbf{Floor} & \textbf{DFG$-$Floor} [95\% CI] & \textbf{Sig.} \\
 \midrule
-  \rowcolor[HTML]{F8EAEA} solar-10.7b & C & 0.992 & 0.0040 \\
-  \rowcolor[HTML]{EAEEF6} llama3.1-8b & A & 0.990 & 0.0050 \\
-  \rowcolor[HTML]{EBF5ED} aya-23-8b & B & 0.989 & 0.0055 \\
-  \rowcolor[HTML]{F8EAEA} yi-1.5-9b & C & 0.987 & 0.0067 \\
-  \rowcolor[HTML]{F8EAEA} qwen2.5-7b & C & 0.985 & 0.0074 \\
-  \rowcolor[HTML]{EAEEF6} mistral-7b & A & 0.985 & 0.0074 \\
-  \rowcolor[HTML]{EAEEF6} gemma2-9b & A & 0.985 & 0.0075 \\
-  \rowcolor[HTML]{EBF5ED} aya-expanse-8b & B & 0.983 & 0.0084 \\
-  \rowcolor[HTML]{EAEEF6} olmo2-7b & A & 0.979 & 0.0106 \\
-  \rowcolor[HTML]{EBF5ED} bloomz-7b & B & 0.973 & 0.0133 \\
+Aya-23-8B & 0.990 & 0.010 & 0.006 & $+0.004$ [$-0.009$, $+0.015$] & 0/7 \\
+Aya-Expanse-8B & 0.990 & 0.010 & 0.008 & $+0.003$ [$-0.012$, $+0.017$] & 0/7 \\
+Gemma-2-9B & 0.985 & 0.015 & 0.007 & $+0.008$ [$-0.008$, $+0.019$] & 1/7 \\
+Llama-3.1-8B & 0.983 & 0.017 & 0.008 & $+0.009$ [$-0.008$, $+0.021$] & 2/7 \\
+Yi-1.5-9B & 0.981 & 0.019 & 0.001 & $+0.018$ [$+0.000$, $+0.027$] & 4/7 \\
+BLOOMZ-7B & 0.980 & 0.020 & 0.008 & $+0.012$ [$-0.003$, $+0.023$] & 1/7 \\
+SOLAR-10.7B & 0.977 & 0.023 & 0.008 & $+0.015$ [$-0.002$, $+0.028$] & 5/7 \\
+Mistral-7B & 0.973 & 0.027 & 0.007 & $+0.020$ [$+0.004$, $+0.031$] & 5/7 \\
+Qwen-2.5-7B & 0.966 & 0.034 & 0.013 & $+0.020$ [$+0.001$, $+0.035$] & 5/7 \\
+OLMo-2-7B & 0.966 & 0.034 & 0.004 & $+0.030$ [$+0.007$, $+0.041$] & 5/7 \\
 \bottomrule
 \end{tabular}
 \end{table}

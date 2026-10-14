@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-04_robustness.py — Fixes for review-flagged soundness issues
+04_robustness.py — Early robustness checks (superseded by 09–22)
 ==============================================================
-Addresses (see review notes, GenAI4World submission):
+Checks:
   #3 Translation-quality confound: per-language back-translation pass-rate,
      regression rerun restricted to high-similarity subset only.
   #2 CLFI redundancy: proves current CLFI is a monotone transform of mean DFG,
@@ -36,7 +36,7 @@ RESOURCE_ORDER = ["high", "mid", "low"]
 def translation_pass_rate_table() -> pd.DataFrame:
     """
     Per-language back-translation pass rate (from validate_translations()
-    output in data/validation_results.json). Tests the review's hypothesis
+    output in data/validation_results.json). Tests the hypothesis
     that low-resource-language SS/LMS effects are a translation-quality
     artifact rather than a model-bias finding.
     """
@@ -176,7 +176,7 @@ def clfi_redundancy_check(df: pd.DataFrame) -> dict:
     which does NOT reward a model that is uniformly biased toward the
     stereotype in every language (old CLFI gives such a model ~1.0; dispersion
     version correctly flags it as non-zero spread only if spread is non-zero —
-    the review's point is this must be explicitly a *different signal*, not
+    the point is that this must be explicitly a *different signal*, not
     that uniform bias should score low. We report both so the paper can state
     "equity" (old CLFI = deployment-consistency) vs "calibration spread" (new)
     as two distinct, non-redundant axes.)
@@ -298,8 +298,7 @@ def mixed_effects_regression(df: pd.DataFrame, sample_frac: float = None, label:
 
     This can be slow on 30k+ rows with ~400 groups; if it fails to converge
     in a reasonable number of iterations we report that explicitly rather
-    than silently falling back — the review's ask is "run it", not
-    "approximate it quietly".
+    than silently falling back.
     """
     import statsmodels.formula.api as smf
 
@@ -384,7 +383,7 @@ def combined_robustness_verdict(df: pd.DataFrame, vdf: pd.DataFrame) -> dict:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def main():
-    parser = argparse.ArgumentParser(description="Robustness fixes for review-flagged soundness issues")
+    parser = argparse.ArgumentParser(description="Early robustness checks")
     parser.add_argument("--translation-only", action="store_true")
     parser.add_argument("--clfi-only", action="store_true")
     parser.add_argument("--regression-only", action="store_true")
@@ -399,7 +398,7 @@ def main():
     run_all = not (args.translation_only or args.clfi_only or args.regression_only)
 
     print("=" * 70)
-    print("  ROBUSTNESS FIXES — review-flagged soundness issues")
+    print("  ROBUSTNESS CHECKS")
     print("=" * 70)
     print(f"  Loaded {len(df)} rows, {df['model'].nunique()} models, {df['language'].nunique()} languages")
 

@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{lcccccc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{English}} & \textbf{Below} & & \multicolumn{2}{c}{\textbf{Slope}} \\
+\cmidrule(lr){2-3}\cmidrule(lr){6-7}
+\textbf{Errors present} & soft & bin. & \textbf{En.} & \textbf{Rel.} & rew. & trans. \\
+\midrule
+All three errors & 0.493 & 0.42 & 35/70 & 0/70 & 0.47 & 0.21 \\
+Only label errors & 0.490 & 0.44 & 33/70 & 0/70 & 0.56 & 0.28 \\
+Only scorer error & 0.534 & 0.59 & 70/70 & 28/70 & 0.48 & 0.21 \\
+None (ours) & 0.536 & 0.63 & 70/70 & 28/70 & 0.66 & 0.26 \\
+\bottomrule
+\end{tabular}
+\caption{The same analysis under each combination of errors. \textbf{English}: mean soft and binary score on English items. \textbf{Below En.}: model--language pairs scoring below English; \textbf{Rel.}: of these, reliable after correction. \textbf{Slope}: carry-over for rewordings and translations. With the label errors, every gap looks like noise.}
+\label{tab:pipeline}
+\end{table}

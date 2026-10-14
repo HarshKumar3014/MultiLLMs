@@ -1,0 +1,82 @@
+{
+ "models": [
+  "aya-23-8b",
+  "aya-expanse-8b",
+  "bloomz-7b",
+  "gemma2-9b",
+  "llama3.1-8b",
+  "mistral-7b",
+  "olmo2-7b",
+  "qwen2.5-7b",
+  "solar-10.7b",
+  "yi-1.5-9b"
+ ],
+ "within_language": {
+  "hi": {
+   "pairs": 1290,
+   "items": 129,
+   "slope_within": 0.8349602201056822,
+   "agree_within": 0.8286821705426357,
+   "corr_within": 0.8368481477714731,
+   "floor_within": 0.003849567355410299,
+   "slope_cross_same_items": 0.16152427840929184,
+   "slope_en_rewording_same_items": 0.6852210018114759
+  },
+  "es": {
+   "pairs": 1010,
+   "items": 101,
+   "slope_within": 0.8213232036705472,
+   "agree_within": 0.80990099009901,
+   "corr_within": 0.8165893155236589,
+   "floor_within": 0.009545136996433707,
+   "slope_cross_same_items": 0.4649555845200104,
+   "slope_en_rewording_same_items": 0.754060710026291
+  }
+ },
+ "nocontext": {
+  "en_mean": 0.548299941440291,
+  "drop_by_lang": {
+   "es": 0.0105,
+   "fr": 0.0225,
+   "zh-CN": 0.0201,
+   "ar": 0.034,
+   "ko": 0.0357,
+   "sw": 0.0481,
+   "hi": 0.0346
+  },
+  "reliable_by_lang": {
+   "es": 0,
+   "fr": 3,
+   "zh-CN": 2,
+   "ar": 6,
+   "ko": 7,
+   "sw": 9,
+   "hi": 10
+  },
+  "reliable": 37,
+  "negative": 70,
+  "slope": 0.18397906861104188,
+  "slope_by_lang": {
+   "ar": 0.19775192629080704,
+   "es": 0.29439746825527624,
+   "fr": 0.25904617753799164,
+   "hi": 0.14309140641874665,
+   "ko": 0.08975066322498486,
+   "sw": 0.07971657341152319,
+   "zh-CN": 0.22275953684470134
+  },
+  "with_context": {
+   "drop_by_lang": {
+    "es": 0.0201,
+    "fr": 0.0219,
+    "zh-CN": 0.0163,
+    "ar": 0.0304,
+    "ko": 0.0267,
+    "sw": 0.0391,
+    "hi": 0.0314
+   },
+   "reliable": 41,
+   "slope": 0.15268472698311064
+  }
+ }
+}

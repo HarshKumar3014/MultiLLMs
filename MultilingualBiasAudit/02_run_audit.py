@@ -25,7 +25,7 @@ import torch.nn.functional as F
 from tqdm import tqdm
 
 from config import (
-    DATA_DIR, RESULTS_DIR, MODEL_REGISTRY, MODEL_NAMES, INFERENCE, LANGUAGES,
+    DATA_DIR, SCORES_DIR, MODEL_REGISTRY, MODEL_NAMES, INFERENCE, LANGUAGES,
 )
 
 
@@ -84,42 +84,57 @@ def unload_model(model, tokenizer):
 # Log-Probability Computation
 # ──────────────────────────────────────────────────────────────────────────────
 
+def continuation_span(tokenizer, context: str, continuation: str):
+    """
+    Token ids of `context + " " + continuation` and the index of the first
+    continuation token.
+
+    Version 2 (fixes a v1 off-by-one). v1 located the continuation by
+    tokenizing `context + " "` separately; for 9 of the 10 audited
+    tokenizers the trailing space becomes its own token there but merges
+    into the next word in the full string, so the FIRST continuation token
+    was never scored (for "He/She had ..." the pronoun itself), and
+    single-token continuations returned -inf.
+
+    Here a token belongs to the continuation iff its character span
+    contains a character of `continuation` (offsets from a fast tokenizer).
+    Slow tokenizers fall back to the longest common prefix with the
+    tokenized context alone.
+    """
+    text = context + " " + continuation
+    boundary = len(context) + 1  # first character of the continuation
+    try:
+        enc = tokenizer(text, add_special_tokens=True, return_offsets_mapping=True)
+        ids, offsets = enc["input_ids"], enc["offset_mapping"]
+        is_cont = [e > boundary and not (s == 0 and e == 0) for s, e in offsets]
+        start = is_cont.index(True)
+        # every later token must also be continuation (ignore trailing specials)
+        assert all(is_cont[start:len(ids)]) or all(
+            c or (s == 0 and e == 0) for c, (s, e) in zip(is_cont[start:], offsets[start:]))
+    except (NotImplementedError, ValueError, KeyError, AssertionError, TypeError):
+        ids = tokenizer.encode(text, add_special_tokens=True)
+        ctx_ids = tokenizer.encode(context, add_special_tokens=True)
+        start = 0
+        while start < min(len(ids), len(ctx_ids)) and ids[start] == ctx_ids[start]:
+            start += 1
+    return ids, max(start, 1)
+
+
 def compute_log_prob(model, tokenizer, context: str, continuation: str) -> float:
     """
-    Compute the average log-probability of `continuation` given `context`.
-    This is the core StereoSet-style scoring: how likely is each continuation?
+    Average log-probability of the tokens of `continuation` given `context`
+    (StereoSet-style length-normalized scoring). See continuation_span.
     """
-    # Tokenize context and full sequence
-    ctx_ids = tokenizer.encode(context, add_special_tokens=False)
-    full_text = context + " " + continuation
-    full_ids = tokenizer.encode(full_text, add_special_tokens=True, return_tensors="pt")
-
-    # Get the number of continuation tokens
-    ctx_with_space = tokenizer.encode(context + " ", add_special_tokens=True)
-    cont_start = len(ctx_with_space) - 1  # position where continuation starts
-
-    if full_ids.shape[1] <= cont_start + 1:
+    ids, start = continuation_span(tokenizer, context, continuation)
+    if start >= len(ids):
         return float("-inf")
-
     device = next(model.parameters()).device
-    full_ids = full_ids.to(device)
-
+    input_ids = torch.tensor([ids], device=device)
     with torch.no_grad():
-        outputs = model(full_ids)
-        logits = outputs.logits  # [1, seq_len, vocab_size]
-
-    # Compute log-probs for continuation tokens only
-    log_probs = F.log_softmax(logits[0], dim=-1)
-    total_log_prob = 0.0
-    n_tokens = 0
-
-    for i in range(cont_start, full_ids.shape[1] - 1):
-        next_token_id = full_ids[0, i + 1].item()
-        total_log_prob += log_probs[i, next_token_id].item()
-        n_tokens += 1
-
-    # Average log-prob (length-normalized)
-    return total_log_prob / max(n_tokens, 1)
+        logits = model(input_ids).logits[0].float()
+    log_probs = F.log_softmax(logits[start - 1:-1], dim=-1)          # predicts tokens start..end
+    targets = input_ids[0, start:]
+    return log_probs.gather(1, targets[:, None]).mean().item()
 
 
 def compute_bias_scores(model, tokenizer, prompt: dict) -> dict:
@@ -194,7 +209,7 @@ def generate_completions(model, tokenizer, context: str, n: int = 3) -> list[str
 
 def run_model_audit(model_key: str, prompts: list[dict], resume: bool = False, no_completions: bool = False) -> pd.DataFrame:
     """Run full audit for a single model. Returns DataFrame of results."""
-    checkpoint_path = RESULTS_DIR / f"{model_key}_checkpoint.csv"
+    checkpoint_path = SCORES_DIR / f"{model_key}_checkpoint.csv"
 
     # Check for existing checkpoint
     completed_ids = set()
@@ -272,7 +287,7 @@ def merge_results(model_keys: list[str]) -> pd.DataFrame:
     """Merge all per-model checkpoints into a single results file."""
     dfs = []
     for key in model_keys:
-        path = RESULTS_DIR / f"{key}_checkpoint.csv"
+        path = SCORES_DIR / f"{key}_checkpoint.csv"
         if path.exists():
             dfs.append(pd.read_csv(path))
         else:
@@ -283,7 +298,7 @@ def merge_results(model_keys: list[str]) -> pd.DataFrame:
         return pd.DataFrame()
 
     merged = pd.concat(dfs, ignore_index=True)
-    merged_path = RESULTS_DIR / "all_results.csv"
+    merged_path = SCORES_DIR / "all_results.csv"
     merged.to_csv(merged_path, index=False)
     print(f"\n  ✓ Merged results: {len(merged)} rows → {merged_path}")
     return merged
@@ -352,7 +367,7 @@ def main():
     print(f"\n{'═'*60}")
     print("  Merging Results")
     print(f"{'═'*60}")
-    merged = merge_results(model_keys)
+    merged = merge_results(MODEL_NAMES)  # every checkpoint on disk, so per-model runs accumulate
 
     if not merged.empty:
         print(f"\n{'═'*60}")
